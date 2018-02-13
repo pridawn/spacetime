@@ -14,3 +14,7 @@ applications/ospuller/data/*.js
 *.sln
 .vs
 .vscode/
+*.Rout
+stats*/
+results*/
+logs*/

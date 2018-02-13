@@ -48,7 +48,7 @@ def initialize_test(sim):
 
 def update(sim):
     for i in xrange(sim.instances):
-        sim.frame.add(BaseSet(1))
+        sim.frame.add(BaseSet(i))
     print "[BENCHMARK STEP]: %s" % sim.curstep
 
 def update_test(sim):

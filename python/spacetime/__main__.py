@@ -10,6 +10,7 @@ import argparse
 import cmd
 import shlex
 from threading import Thread as Parallel
+from subprocess import Popen
 
 class SpacetimeConsole(cmd.Cmd):
     prompt = 'Spacetime> '
@@ -20,12 +21,14 @@ class SpacetimeConsole(cmd.Cmd):
         Exits all applications by calling their shutdown methods.
         """
         shutdown()
+        return True
 
     def do_exit(self, line):
         """ exit
         Exits all applications by calling their shutdown methods.
         """
         shutdown()
+        return True
 
     def do_findobjs(self, line):
         """ findobjs
@@ -171,8 +174,10 @@ class SpacetimeConsole(cmd.Cmd):
                 except:
                     print "could not clear objects of type %s" % type_text
 
-    def do_alive(self, err):
-        print "Thread is alive." if p.is_alive else "Thread is dead."
+    def postcmd(self, stop, line):
+        if stop:
+            print "Shutting down spacetime command prompt."
+        return stop
     
     def emptyline(self):
         pass
@@ -186,7 +191,6 @@ class SpacetimeConsole(cmd.Cmd):
     # issues.
 
 def shutdown():
-    print "Shutting down ..."
     global fs
     fs.shutdown()
 
@@ -206,12 +210,7 @@ if __name__== "__main__":
     else:
         from spacetime.server.store_server_tornado import FrameServer
 
-    global fs
     fs = FrameServer(args.port, args.debug, args.timeout, args.clearempty, args.trackip)
-    global p
-    p = Parallel(target = fs.run, args = (args.profile,))
-    p.daemon = True
-    p.start()
 
     if args.watchdog:
         try:
@@ -220,14 +219,13 @@ if __name__== "__main__":
         except:
             print "error starting watchdog."
             raise
-    global stc
     stc = SpacetimeConsole()
-    stc.cmdloop()
-    print "Exited Console."
-    print p.is_alive()
-    sys.exit(0)
-
-
-
-
-
+    stc_t = Parallel(target=stc.cmdloop)
+    stc_t.daemon = True
+    stc_t.start()
+    try:
+        fs.run(args.profile)
+    except KeyboardInterrupt:
+        stc.onecmd("exit")
+    finally:
+        Popen("stty sane", shell=True)

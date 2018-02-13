@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 '''
 Created on Aug 25, 2016
 
@@ -9,6 +10,7 @@ Created on Aug 24, 2016
 @author: arthurvaladares
 '''
 from datamodel.benchmark.datamodel import BaseSet
+
 import random
 
 BM_PRODUCER = [BaseSet]

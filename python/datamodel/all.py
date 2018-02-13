@@ -6,6 +6,7 @@ Created on Apr 19, 2016
 import pkgutil
 import importlib
 import inspect
+import os
 
 DATAMODEL_TYPES = []
 def load_all_sets(reload_modules=False):
@@ -15,7 +16,7 @@ def load_all_sets(reload_modules=False):
 
     module_list = []
     datamodel_list = []
-
+    p = os.getcwd()
     for _, name, ispkg in pkgutil.iter_modules(['datamodel']):
         if ispkg:
             try:
@@ -39,7 +40,7 @@ def load_all_sets(reload_modules=False):
 
     for module in datamodel_list:
         for name, cls in inspect.getmembers(module, inspect.isclass):
-            if hasattr(cls, "__dependent_type__"):
+            if hasattr(cls, "__rtypes_metadata__"):
                 DATAMODEL_TYPES.append(cls)
     DATAMODEL_TYPES = list(set(DATAMODEL_TYPES).difference(OLD_DATAMODEL_TYPES))
 

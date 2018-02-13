@@ -4,7 +4,7 @@ Created on Feb 2, 2017
 author: Rohan Achar
 '''
 from functools import wraps
-import json
+import json, cbor
 import logging, logging.handlers
 import os
 import signal
@@ -34,30 +34,17 @@ def handle_exceptions(f):
                 FrameServer.ip_watcher.put((remote_ip, args[1]))
             if type(args[0]) is not Register:
                 if args[1] not in FrameServer.Store.get_app_list():
-                    raise HTTPError(500, "%s not registered to the store." % args[1])
+                    raise HTTPError(
+                        500, "%s not registered to the store." % args[1])
             ret = f(*args, **kwds)
-        except Exception, e:
-            logger.exception("Exception handling function %s:", f.func_name)
-            raise HTTPError(500, "Exception handling function %s:" % f.func_name)
-        except HTTPError, e:
-            raise
+        except Exception as e:
+            logger.exception(
+                "Exception %s handling function %s:", repr(e), f.func_name)
+            raise HTTPError(
+                500, "Exception handling function %s:" % f.func_name)
         return ret
     return wrapped
 
-is_closing = False
-
-def signal_handler(signal, frame):
-    print('You pressed Ctrl+C!')
-    global is_closing
-    is_closing = True
-
-def try_exit():
-    global is_closing
-    if is_closing:
-        server.shutdown()
-        tornado.ioloop.IOLoop.instance().stop()
-
-signal.signal(signal.SIGINT, signal_handler)  # @UndefinedVariable
 
 class GetAllUpdatedTracked(RequestHandler):
     @handle_exceptions
@@ -71,16 +58,22 @@ class GetAllUpdatedTracked(RequestHandler):
         data = self.request.body
         FrameServer.Store.update(sim, data)
 
+
 class Register(RequestHandler):
     @handle_exceptions
     def put(self, sim):
         data = self.request.body
-        #data = urllib2.unquote(request.data.replace("+", " "))
         json_dict = json.loads(data)
         typemap = json_dict["sim_typemap"]
-        wire_format = json_dict["wire_format"] if "wire_format" in json_dict else "json"
-        app_id = json_dict["app_id"]
-        FrameServer.Store.register_app(sim, typemap, wire_format = wire_format)
+        wire_format = (
+            json_dict["wire_format"] if "wire_format" in json_dict else "json")
+        wait_for_server = (
+            json_dict["wait_for_server"]
+            if "wait_for_server" in json_dict else
+            False)
+        FrameServer.Store.register_app(
+            sim, typemap, wire_format=wire_format,
+            wait_for_server=wait_for_server)
 
     @handle_exceptions
     def delete(self, sim):
@@ -98,8 +91,9 @@ def SetupLoggers(debug) :
     folder = "logs/"
     if not os.path.exists(folder):
         os.mkdir(folder)
-    logfile = filename = os.path.join(folder, "frameserver.log")
-    flog = logging.handlers.RotatingFileHandler(logfile, maxBytes=10 * 1024 * 1024, backupCount=50, mode='w')
+    logfile = os.path.join(folder, "frameserver.log")
+    flog = logging.handlers.RotatingFileHandler(
+        logfile, maxBytes=10 * 1024 * 1024, backupCount=50, mode='w')
     flog.setLevel(logl)
     flog.setFormatter(logging.Formatter('%(levelname)s [%(name)s] %(message)s'))
     logger.addHandler(flog)
@@ -118,21 +112,25 @@ def SetupLoggers(debug) :
     logging.getLogger('werkzeug').setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("tornado.access").setLevel(logging.WARNING)
-    tlog = logging.handlers.RotatingFileHandler(logfile, maxBytes=10 * 1024 * 1024, backupCount=50, mode='w')
+    # tlog = logging.handlers.RotatingFileHandler(
+    #     logfile, maxBytes=10 * 1024 * 1024, backupCount=50, mode='w')
     #tlog.setLevel(logging.INFO)
     #logging.getLogger("tornado.access").addHandler(tlog)
 
 def ip_watcher():
     global ip_table
-    ip_table = shelve.open(os.path.join(os.path.dirname(__file__), "../logs/ip_tables.shelve"))
+    ip_table = shelve.open(
+        os.path.join(os.path.dirname(__file__), "../logs/ip_tables.shelve"))
     
     while True:
         try:
             ip_and_app_id = FrameServer.ip_watcher.get()
             ip, app_id = ip_and_app_id
             if ip == "127.0.0.1": continue
-            if ip not in ip_table or (ip in ip_table and len(ip_table[ip]) == 0):
-                req = requests.get("http://freegeoip.net/json/?q={0}".format(ip))
+            if (ip not in ip_table
+                    or (ip in ip_table and len(ip_table[ip]) == 0)):
+                req = requests.get(
+                    "http://freegeoip.net/json/?q={0}".format(ip))
                 if req.status_code == 200:
                     resp = req.json()
                     resp["app_id"] = app_id
@@ -147,9 +145,9 @@ def ip_watcher():
         
 
 class FrameServer(object):
-    name2class = dict([(tp.__realname__, tp) for tp in DATAMODEL_TYPES])
-    name2baseclasses = dict([(tp.__realname__, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
-    
+    name2class = dict(
+        [(tp.__rtypes_metadata__.name, tp) for tp in DATAMODEL_TYPES])
+
     Store = dataframe_stores(name2class)
     Shutdown = False
     app_gc_timers = {}
@@ -157,7 +155,7 @@ class FrameServer(object):
     # Garbage collection
     disconnect_timer = None
     timeout = 0
-    
+
     @staticmethod
     def make_app():
         return tornado.web.Application([
@@ -165,7 +163,8 @@ class FrameServer(object):
             (r"/([a-zA-Z0-9_-]+)", Register),
         ])
 
-    def __init__(self, port, debug, timeout, clear_on_exit = False, has_ip_watcher = False):
+    def __init__(self, port, debug, timeout,
+                 clear_on_exit=False, has_ip_watcher=False):
         global server
         SetupLoggers(debug)
         logging.info("Log level is " + str(logger.level))
@@ -204,17 +203,15 @@ class FrameServer(object):
                 else:
                     print "failed to start profiler."
         self.app.listen(self.port)
-        tornado.ioloop.PeriodicCallback(try_exit, 100).start()
+        # tornado.ioloop.PeriodicCallback(try_exit, 100).start()
         tornado.ioloop.IOLoop.current().start()
-        tornado.ioloop.IOLoop.current().close(True)
-        sys.exit(0)
+        # tornado.ioloop.IOLoop.current().close(True)
 
     def reload_dms(self):
         from datamodel.all import DATAMODEL_TYPES
         FrameServer.Store.reload_dms()
-        FrameServer.name2class = dict([(tp.__realname__, tp) for tp in DATAMODEL_TYPES])
-        FrameServer.name2baseclasses = dict([(tp.__realname__, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
-        print [tp.__realname__ for tp in DATAMODEL_TYPES]
+        FrameServer.name2class = dict(
+            [(tp.__rtypes_metadata__.name, tp) for tp in DATAMODEL_TYPES])
         self.DATAMODEL_TYPES = DATAMODEL_TYPES
 
     def pause(self):
@@ -255,5 +252,7 @@ class FrameServer(object):
             strtime = time.strftime("%Y-%m-%d_%H-%M-%S")
             self.profile.disable()
             self.profile.create_stats()
-            self.profile.dump_stats(os.path.join('stats', "%s_frameserver.ps" % (strtime)))
-
+            self.profile.dump_stats(
+                os.path.join('stats', "%s_frameserver.ps" % (strtime)))
+        FrameServer.Store.shutdown()
+        tornado.ioloop.IOLoop.instance().stop()

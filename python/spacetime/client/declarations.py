@@ -98,3 +98,15 @@ class Setter(DataAgent):
                 actual_class.__declaration_map__ = {}
             actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Setter] = self.types
         return DataAgent.__call__(self, actual_class)
+
+class ServerTriggers(DataAgent):
+    def __init__(self, *functions, **keywords):
+        self.functions = functions
+        DataAgent.__init__(self, keywords)
+
+    def __call__(self, actual_class):
+        if self.functions:
+            if actual_class.__declaration_map__ == None:
+                actual_class.__declaration_map__ = {}
+            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Triggers] = self.functions
+        return DataAgent.__call__(self, actual_class)

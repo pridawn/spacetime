@@ -7,3 +7,4 @@ class Modes(object):
     Deleter = "deleting"
     Taker = "taking"
     TakerSetter = "takingsetting"
+    Triggers = "triggers"

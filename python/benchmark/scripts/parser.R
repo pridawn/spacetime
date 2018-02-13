@@ -37,7 +37,7 @@ generate_graph <- function(ylist, lgd_names, lgd_colors, fname, width=8, height=
     #pdf(fname,width=width,height=height)
     png(paste(fname,"png",sep='.'),width=width,height=height,units="in",res=300)
     par(mar=c(4.5, 4.0, 1.0,1.0))
-    plot(ylist[[1]], col='white', ylim=c(0,1300), col.lab=1.25, cex.lab=1.25, xlab="simulation step", ylab="processing time(ms)")
+    plot(ylist[[1]], col='white', ylim=c(0,2500), col.lab=1.25, cex.lab=1.25, xlab="simulation step", ylab="processing time(ms)")
     #plot(ylist[[1]], col='white', col.lab=1.25, cex.lab=1.25, xlab="simulation step", ylab="processing time(ms)")
     legend("topright", legend=unlist(lgd_names), col=unlist(lgd_colors), lty=1, bty='n', cex=1, y.intersp=1.35)
     for (i in 1:length(ylist)) {

@@ -9,7 +9,7 @@ from datamodel.benchmark.datamodel import *
 from spacetime.client.IApplication import IApplication
 from spacetime.client.declarations import Producer, GetterSetter, Tracker, \
     Deleter, Setter, Getter
-from common.instrument import SpacetimeInstruments as si, timethis
+from spacetime.common.instrument import SpacetimeInstruments as si, timethis
 global BT_PRODUCER
 global BT_GETTER
 global BT_SETTER

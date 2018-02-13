@@ -4,7 +4,7 @@ Created on Aug 24, 2016
 @author: arthurvaladares
 '''
 from datamodel.benchmark.datamodel import BaseSet
-from common.instrument import timethis
+from spacetime.common.instrument import timethis
 
 BM_PRODUCER = [BaseSet]
 BM_GETTER = []

@@ -169,8 +169,8 @@ class FrameServer(object):
     '''
     Store server for CADIS
     '''
-    name2class = dict([(tp.__realname__, tp) for tp in DATAMODEL_TYPES])
-    name2baseclasses = dict([(tp.__realname__, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
+    name2class = dict([(tp.__rtypes_metadata__.name, tp) for tp in DATAMODEL_TYPES])
+    name2baseclasses = dict([(tp.__rtypes_metadata__.name, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
     
     Store = dataframe_stores(name2class)
     Shutdown = False
@@ -180,7 +180,7 @@ class FrameServer(object):
     disconnect_timer = None
     timeout = 0
 
-    def __init__(self, port, debug, external, timeout, clear_on_exit = False):
+    def __init__(self, port, debug, external, timeout, clear_on_exit=False):
         global server
         SetupLoggers(debug)
         logging.info("Log level is " + str(logger.level))
@@ -226,9 +226,9 @@ class FrameServer(object):
     def reload_dms(self):
         from datamodel.all import DATAMODEL_TYPES
         FrameServer.Store.reload_dms()
-        FrameServer.name2class = dict([(tp.__realname__, tp) for tp in DATAMODEL_TYPES])
-        FrameServer.name2baseclasses = dict([(tp.__realname__, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
-        print [tp.__realname__ for tp in DATAMODEL_TYPES]
+        FrameServer.name2class = dict([(tp.__rtypes_metadata__.name, tp) for tp in DATAMODEL_TYPES])
+        FrameServer.name2baseclasses = dict([(tp.__rtypes_metadata__.name, tp.__pcc_bases__) for tp in DATAMODEL_TYPES])
+        print [tp.__rtypes_metadata__.name for tp in DATAMODEL_TYPES]
         self.DATAMODEL_TYPES = DATAMODEL_TYPES
 
     def pause(self):

@@ -15,24 +15,21 @@ import cmd
 import sys
 import os
 import zlib
+import dill
+import cbor
 
-from pcc.dataframe.dataframe_client import dataframe_client as dataframe
+from rtypes.dataframe.dataframe_client import dataframe_client as dataframe
 from .IFrame import IFrame
-from pcc.recursive_dictionary import RecursiveDictionary
+from rtypes.pcc.utils.recursive_dictionary import RecursiveDictionary
 
 import logging
-from logging import NullHandler
-from requests.exceptions import HTTPError, ConnectionError
 from spacetime.common.instrument import SpacetimeInstruments as si
 from spacetime.common.instrument import timethis
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-from requests.sessions import Session
-from spacetime.common.javahttpadapter import MyJavaHTTPAdapter, ignoreJavaSSL
 from spacetime.common.modes import Modes
-from pcc.dataframe_changes.IDataframeChanges import DataframeChanges_Base
+from rtypes.dataframe.dataframe_changes.IDataframeChanges import DataframeChanges_Base
 from spacetime.common.wire_formats import FORMATS
-import platform
+from logging import NullHandler
+
 
 class SpacetimeConsole(cmd.Cmd):
     """Command console interpreter for frame."""
@@ -71,26 +68,29 @@ class SpacetimeConsole(cmd.Cmd):
 
 class frame(IFrame):
     framelist = set()
-    def __init__(self, address="http://127.0.0.1:12000/", time_step=500, instrument=False, profiling=False, wire_format="cbor", compress=False):
+    def __init__(self, connector, address="http://127.0.0.1" , port="12000",
+                 time_step=500, instrument=False, profiling=False,
+                 wire_format="cbor", compress=False):
         frame.framelist.add(self)
+        self.connector = connector
         self.thread = None
         self.__app = None
         self.__appname = ""
-        self.__host_typemap = {}
-        self.__host_wire_format = {}
-        self.__typemap = {}
-        self.__name2type = {}
+        self.__host_typemap = dict()
+        self.__host_wire_format = dict()
+        self.__typemap = dict()
+        self.__name2type = dict()
         self.object_store = dataframe()
         self.object_store.start_recording = True
-        if not address.endswith('/'):
-            address += '/'
+        if port:
+            address = address.rstrip("/") + ":" + port + "/"
         self.__address = address
         self.__default_wire_format = wire_format
         self.__compress = compress
         self.__time_step = (float(time_step) / 1000)
-        self.__new = {}
-        self.__mod = {}
-        self.__del = {}
+        self.__new = dict()
+        self.__mod = dict()
+        self.__del = dict()
         self.__observed_types = set()
         self.__observed_types_new = set()
         self.__observed_types_mod = set()
@@ -99,13 +99,14 @@ class frame(IFrame):
         self.__start_time = time.strftime("%Y-%m-%d_%H-%M-%S")
         self.__instrumented = instrument
         self.__profiling = profiling
-        self.__sessions = {}
-        self.__host_to_push_groupkey = {}
+        self.__sessions = dict()
+        self.__host_to_push_groupkey = dict()
+        self.__host_to_connector = dict()
         if instrument:
-            self._instruments = {}
-            self._instrument_headers = []
-            self._instrument_headers.append('bytes sent')
-            self._instrument_headers.append('bytes received')
+            self._instruments = dict()
+            self._instrument_headers = list()
+            self._instrument_headers.append("bytes sent")
+            self._instrument_headers.append("bytes received")
 
     def __register_app(self, app):
         self.logger = self.__setup_logger("spacetime@" + self.__appname)
@@ -113,73 +114,72 @@ class frame(IFrame):
         for address, tpmap in self.__app.__declaration_map__.items():
             if address == "default":
                 address = self.__address
-            fulladdress = address + self.__appname
-            if fulladdress not in self.__host_typemap:
-                self.__host_typemap[fulladdress] = tpmap
+            
+            if address not in self.__host_typemap:
+                self.__host_typemap[address] = tpmap
             else:
                 for declaration in tpmap:
-                    self.__host_typemap[fulladdress].setdefault(declaration, set()).update(set(tpmap[declaration]))
+                    self.__host_typemap[address].setdefault(
+                        declaration, set()).update(set(tpmap[declaration]))
 
-        self.__default_wire_format = (self.__app.__special_wire_format__["default"] 
-                                      if "default" in self.__app.__special_wire_format__ else 
-                                      self.__default_wire_format)
+        self.__default_wire_format = (
+            self.__app.__special_wire_format__["default"] 
+            if "default" in self.__app.__special_wire_format__ else 
+            self.__default_wire_format)
         for host in self.__host_typemap:
             self.__host_wire_format[host] = (
                 self.__app.__special_wire_format__[host] 
                 if host in self.__app.__special_wire_format__ else 
                 self.__default_wire_format) 
         all_types = set()
+
         for host in self.__host_typemap:
             wire_format = self.__host_wire_format[host]
-            jobj = dict([(k, [tp.__realname__ for tp in v]) for k, v in self.__host_typemap[host].items()])
-            producing, getting, gettingsetting, deleting, setting, tracking = (self.__host_typemap[host].setdefault(Modes.Producing, set()),
-                self.__host_typemap[host].setdefault(Modes.Getter, set()),
-                self.__host_typemap[host].setdefault(Modes.GetterSetter, set()),
-                self.__host_typemap[host].setdefault(Modes.Deleter, set()),
-                self.__host_typemap[host].setdefault(Modes.Setter, set()),
-                self.__host_typemap[host].setdefault(Modes.Tracker, set()))
+            self.connector.add_host(
+                self.__appname, host, wire_format, self.__host_typemap[host])
+
+            (producing, getting, gettingsetting,
+             deleting, setting, tracking) = (
+                 self.__host_typemap[host].setdefault(Modes.Producing, set()),
+                 self.__host_typemap[host].setdefault(Modes.Getter, set()),
+                 self.__host_typemap[host].setdefault(
+                     Modes.GetterSetter, set()),
+                 self.__host_typemap[host].setdefault(Modes.Deleter, set()),
+                 self.__host_typemap[host].setdefault(Modes.Setter, set()),
+                 self.__host_typemap[host].setdefault(Modes.Tracker, set()))
             self.__typemap.setdefault(Modes.Producing, set()).update(producing)
             self.__typemap.setdefault(Modes.Getter, set()).update(getting)
             self.__typemap.setdefault(Modes.GetterSetter, set()).update(gettingsetting)
             self.__typemap.setdefault(Modes.Deleter, set()).update(deleting)
             self.__typemap.setdefault(Modes.Setter, set()).update(setting)
             self.__typemap.setdefault(Modes.Tracker, set()).update(tracking)
-            
-            all_types_host = tracking.union(producing).union(getting).union(gettingsetting).union(deleting).union(setting)
+
+            all_types_host = tracking.union(
+                producing).union(getting).union(gettingsetting).union(
+                    deleting).union(setting)
             all_types.update(all_types_host)
             self.__observed_types.update(all_types_host)
-            self.__observed_types_new.update(self.__host_typemap[host][Modes.Tracker].union(self.__host_typemap[host][Modes.Getter]).union(self.__host_typemap[host][Modes.GetterSetter]))
+            self.__observed_types_new.update(
+                self.__host_typemap[host][Modes.Tracker].union(
+                    self.__host_typemap[host][Modes.Getter]).union(
+                        self.__host_typemap[host][Modes.GetterSetter]))
 
-            self.__observed_types_mod.update(self.__host_typemap[host][Modes.Getter].union(self.__host_typemap[host][Modes.GetterSetter]))
+            self.__observed_types_mod.update(
+                self.__host_typemap[host][Modes.Getter].union(
+                    self.__host_typemap[host][Modes.GetterSetter]))
 
-            jsonobj = json.dumps({"sim_typemap": jobj, "wire_format": wire_format, "app_id": self.__app.app_id})
-            try:
-                self.__sessions[host] = Session()
-                if platform.system() == 'Java':
-                    ignoreJavaSSL()
-                    self.logger.info("Using custom HTTPAdapter for Jython")
-                    self.__sessions[host].mount(host, MyJavaHTTPAdapter())
-                    self.__sessions[host].verify=False
-                resp = requests.put(host,
-                             data = jsonobj,
-                             headers = {'content-type': 'application/json'})
-            except HTTPError as exc:
-                self.__handle_request_errors(resp, exc)
-                return False
-            except ConnectionError:
-                self.logger.exception("Cannot connect to host.")
-                self.__disconnected = True
-                return False
-        self.__name2type = dict([(tp.__realname__, tp) for tp in all_types])
+        self.__name2type = dict(
+            [(tp.__rtypes_metadata__.name, tp) for tp in all_types])
         self.object_store.add_types(all_types)
         for host in self.__host_typemap:
-            self.__host_to_push_groupkey[host] = set([self.object_store.get_group_key(tp)
-                                                      for tp in self.__host_typemap[host][Modes.GetterSetter].union(
-                                                                self.__host_typemap[host][Modes.Setter]).union(
-                                                                self.__host_typemap[host][Modes.Producing]).union(
-                                                                self.__host_typemap[host][Modes.Deleter])    
-                                                     ])
-        
+            self.__host_to_push_groupkey[host] = set(
+                [self.object_store.get_group_key(tp)
+                 for tp in self.__host_typemap[host][Modes.GetterSetter].union(
+                    self.__host_typemap[host][Modes.Setter]).union(
+                    self.__host_typemap[host][Modes.Producing]).union(
+                    self.__host_typemap[host][Modes.Deleter])])
+        for host in self.__host_typemap:
+            self.connector.register(self.__appname, host)
         return True
 
     @staticmethod
@@ -279,13 +279,16 @@ class frame(IFrame):
                 if self.__profiling:
                     try:
                         from cProfile import Profile  # @UnresolvedImport
-                        if not os.path.exists('stats'):
-                            os.mkdir('stats')
+                        if not os.path.exists("stats"):
+                            os.mkdir("stats")
                         self.__profile = Profile()
                         self.__profile.enable()
-                        self.logger.info("starting profiler for %s", self.__appname)
+                        self.logger.info(
+                            "starting profiler for %s", self.__appname)
                     except:
-                        self.logger.error("Could not import cProfile (not supported in Jython).")
+                        self.logger.error(
+                            "Could not import cProfile "
+                            "(not supported in Jython).")
                         self.__profile = None
                         self.__profiling = None
 
@@ -305,20 +308,18 @@ class frame(IFrame):
                     if timespent < self.__time_step:
                         time.sleep(float(self.__time_step - timespent))
                     else:
-                        self.logger.info("loop exceeded maximum time: %s ms", timespent)
+                        self.logger.info(
+                            "loop exceeded maximum time: %s ms", timespent)
 
                     # Writes down total time spent in spacetime methods
                     if self.__instrumented:
                         si.record_instruments(timespent, self)
-                # One last time, because _shutdown may delete objects from the store
+                # One last time, because _shutdown may
+                # delete objects from the store
                 self.__pull()
                 self._shutdown()
                 self.__push()
                 self.__unregister_app()
-            except ConnectionError as cerr:
-                self.logger.error("A connection error occurred: %s", cerr.message)
-            except HTTPError as herr:
-                self.logger.error("A fatal error has occurred while communicating with the server: %s", herr.message)
             except:
                 self.logger.exception("An unknown error occurred.")
                 raise
@@ -326,7 +327,10 @@ class frame(IFrame):
                 if self.__profiling:
                     self.__profile.disable()
                     self.__profile.create_stats()
-                    self.__profile.dump_stats(os.path.join('stats', "%s_stats_%s.ps" % (self.__start_time, self.__appname)))
+                    self.__profile.dump_stats(
+                        os.path.join(
+                            "stats", "%s_stats_%s.ps" % (
+                                self.__start_time, self.__appname)))
         else:
             self.logger.info("Could not register, exiting run loop...")
 
@@ -358,7 +362,9 @@ class frame(IFrame):
                 return self.object_store.get(tp, oid)
             return self.object_store.get(tp)
         else:
-            raise Exception("Application %s does not annotate type %s" % (self.__appname, tp))
+            raise Exception(
+                "Application %s does not annotate type %s" % (
+                    self.__appname, tp))
 
 
     def add(self, obj):
@@ -374,7 +380,9 @@ class frame(IFrame):
         if obj.__class__ in self.__typemap[Modes.Producing]:
             self.object_store.append(obj.__class__, obj)
         else:
-            raise Exception("Application %s is not a producer of type %s" % (self.__appname, obj.__class__))
+            raise Exception(
+                "Application %s is not a producer of type %s" % (
+                    self.__appname, obj.__class__))
 
     def delete(self, tp, obj):
         """
@@ -391,11 +399,13 @@ class frame(IFrame):
         if tp in self.__typemap[Modes.Deleter]:
             self.object_store.delete(tp, obj)
         else:
-            raise Exception("Application %s is not registered to delete %s" % (self.__appname, tp))
+            raise Exception(
+                "Application %s is not registered to delete %s" % (
+                    self.__appname, tp))
 
     def get_new(self, tp):
         """
-        Retrieves new objects of type 'tp' retrieved in last pull (i.e. since
+        Retrieves new objects of type "tp" retrieved in last pull (i.e. since
         last tick).
 
         Arguments:
@@ -418,7 +428,7 @@ class frame(IFrame):
 
     def get_mod(self, tp):
         """
-        Retrieves objects of type 'tp' that were modified since last pull
+        Retrieves objects of type "tp" that were modified since last pull
         (i.e. since last tick).
 
         Arguments:
@@ -441,7 +451,7 @@ class frame(IFrame):
 
     def get_deleted(self, tp):
         """
-        Retrieves objects of type 'tp' that were deleted since last pull
+        Retrieves objects of type "tp" that were deleted since last pull
         (i.e. since last tick).
 
         Arguments:
@@ -462,48 +472,38 @@ class frame(IFrame):
                 "always returned"),tp)
             return []
 
-    def __handle_request_errors(self, resp, exc):
-        if resp.status_code == 401:
-            self.logger.error("This application is not registered at the server. Stopping...")
-            raise
-        else:
-            self.logger.warn("Non-success code received from server: %s %s",
-                                          resp.status_code, resp.reason)
-    
     @timethis
-    def __process_pull_resp(self, resp):
+    def __process_pull_resp(self, only_diff, resp):
         if resp and "gc" in resp:
             self.object_store.clear_joins()
-            self.object_store.apply_changes(resp, track = False)
-            #self.object_store.clear_record()
+            self.object_store.apply_changes(
+                resp, track=False, only_diff=only_diff)
 
     @timethis
     def __pull(self):
         if self.__disconnected:
             return
         if self.__instrumented:
-            self._instruments['bytes received'] = 0
+            self._instruments["bytes received"] = 0
         updates = DataframeChanges_Base()
-        try:
-            for host in self.__host_typemap:
-                type_dict = {}
-                # Need to give mechanism to selectively ask for some changes. Very hard to implement in current dataframe scheme.
-                resp = self.__sessions[host].get(host + "/updated", data = {})
-                try:
-                    resp.raise_for_status()
-                    if self.__instrumented:
-                        self._instruments['bytes received'] = len(resp.content)
-                    data = resp.content
-                    #print data
-                    DF_CLS, content_type = FORMATS[self.__host_wire_format[host]]
-                    dataframe_change = DF_CLS()
-                    dataframe_change.ParseFromString(data)
-                    updates.CopyFrom(dataframe_change)
-                except HTTPError as exc:
-                    self.__handle_request_errors(resp, exc)
-            #json.dump(updates, open("pull_" + self.__appname + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
-            self.__process_pull_resp(updates)
-        except ConnectionError:
+        is_only_diff = None
+        for host in self.__host_typemap:
+            # Need to give mechanism to selectively ask for some changes. 
+            # Very hard to implement in current dataframe scheme.
+            success, resp_len, only_diff, update = self.connector.get_updates(
+                self.__appname, host)
+            if is_only_diff is None:
+                is_only_diff = only_diff
+            else:
+                is_only_diff = is_only_diff and only_diff
+            updates.CopyFrom(update)
+            if self.__instrumented:
+                self._instruments["bytes received"] = resp_len
+        # json.dump(
+        #     updates, open("pull_" + self.__appname + ".json", "a"),
+        #     sort_keys = True, separators = (",", ": "), indent = 4)
+        self.__process_pull_resp(is_only_diff, updates)
+        if not success:
             self.logger.exception("Disconnected from host.")
             self.__disconnected = True
             self._stop()
@@ -513,36 +513,29 @@ class frame(IFrame):
         if self.__disconnected:
             return
         if self.__instrumented:
-            self._instruments['bytes sent'] = 0
+            self._instruments["bytes sent"] = 0
         changes = self.object_store.get_record()
-        #json.dump(changes, open("push_" + self.__appname + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
-            
+        # json.dump(
+        #     changes, open("push_" + self.__appname + ".json", "a"),
+        #     sort_keys=True, separators=(",", ": "), indent=4)
+
         for host in self.__host_typemap:
-            try:
-                DF_CLS, content_type = FORMATS[self.__host_wire_format[host]]
-                changes_for_host = DF_CLS()
-                changes_for_host["gc"] = RecursiveDictionary([
-                    (gck, gc) 
-                    for gck, gc in changes["gc"].items() 
-                    if gck in self.__host_to_push_groupkey[host]])
-                if "types" in changes:
-                    changes_for_host["types"] = changes["types"]
-                dictmsg = changes_for_host.SerializeToString()
-                #update_dict = {"update_dict": protomsg}
-                if self.__instrumented:
-                    self._instruments['bytes sent'] = sys.getsizeof(dictmsg)
-                headers = {'content-type': content_type}
-                if self.__compress:
-                    headers['content-encoding'] = 'gzip'
-                    dictmsg = zlib.compress(dictmsg)
-                resp = self.__sessions[host].post(host + "/updated", 
-                                                  data = dictmsg, 
-                                                  headers = headers)
-            except TypeError:
-                self.logger.exception("error encoding obj. Object: %s", changes_for_host)
-            except HTTPError as exc:
-                self.__handle_request_errors(resp, exc)
-            except ConnectionError:
+            DF_CLS, _ = (
+                FORMATS[self.__host_wire_format[host]])
+            changes_for_host = DF_CLS()
+            changes_for_host["gc"] = RecursiveDictionary({
+                gck: gc
+                for gck, gc in changes["gc"].items() 
+                if gck in self.__host_to_push_groupkey[host]})
+            if "types" in changes:
+                changes_for_host["types"] = changes["types"]
+            success = self.connector.update(
+                self.__appname, host, changes_for_host)
+            dictmsg = changes_for_host.SerializeToString()
+            #update_dict = {"update_dict": protomsg}
+            if self.__instrumented:
+                self._instruments["bytes sent"] = sys.getsizeof(dictmsg)
+            if not success:
                 self.logger.exception("Disconnected from host.")
                 self.__disconnected = True
                 self._stop()
@@ -569,7 +562,7 @@ class frame(IFrame):
 
     def __unregister_app(self):
         for host in self.__host_typemap:
-            resp = requests.delete(host)
+            self.connector.disconnect(self.__appname, host)
             self.logger.info("Successfully deregistered from %s", host)
 
     def __setup_logger(self, name, file_path=None):
@@ -579,7 +572,7 @@ class frame(IFrame):
         logger.setLevel(logging.DEBUG)
         logger.debug("Starting logger for %s",name)
         return logger
-        #logging.getLogger('requests').setLevel(logging.WARNING)
+        # logging.getLogger("requests").setLevel(logging.WARNING)
 
 def shutdown():
     import sys
@@ -598,3 +591,7 @@ def signal_handler(signal, signal_frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+def serialize_type(tp):
+    original_module = tp.__module__
+    tp.__module__ = "__main__"
+    return {"module": original_module, "dill": dill.dumps(tp)}

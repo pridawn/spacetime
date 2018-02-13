@@ -7,24 +7,28 @@ from __future__ import absolute_import
 from spacetime.client.frame import frame
 
 from requests.exceptions import HTTPError, ConnectionError
-from common.instrument import timethis
-import common.instrument as inst
+from spacetime.common.instrument import timethis
+import spacetime.common.instrument as inst
 import json
-from common.converter import create_jsondict, create_complex_obj
+from spacetime.common.converter import create_jsondict, create_complex_obj
 from requests.models import Response
-from pcc.recursive_dictionary import RecursiveDictionary
+from rtypes.pcc.utils.recursive_dictionary import RecursiveDictionary
 import sys
 import time
 
-DIFF_PULL = set(["FULL", "DIFF_PUSHPULL"])
-DIFF_PUSH = set(["FULL", "DIFF_PUSH", "DIFF_PUSHPULL"])
+DIFF_PULL = set(["FULLNOWAIT", "FULLWAIT", "DIFF_PUSHPULL", "MYSQL"])
+DIFF_PUSH = set(
+    ["FULLNOWAIT", "FULLWAIT", "DIFF_PUSH", "DIFF_PUSHPULL", "MYSQL"])
 
 class BenchmarkFrame(frame):
     def __init__(self, *args, **kwargs):
         self.mode = None
         super(BenchmarkFrame, self).__init__(*args, **kwargs)
         if hasattr(self, "_instruments"):
-            inst.INSTRUMENT_HEADERS[BenchmarkFrame.__module__] = list(set(inst.INSTRUMENT_HEADERS[BenchmarkFrame.__module__]).union(set(inst.INSTRUMENT_HEADERS[frame.__module__])))  # @UndefinedVariable
+            inst.INSTRUMENT_HEADERS[BenchmarkFrame.__module__] = list(
+                set(inst.INSTRUMENT_HEADERS[BenchmarkFrame.__module__]).union(
+                    set(inst.INSTRUMENT_HEADERS[frame.__module__])))
+            # @UndefinedVariable
             #self._instrument_headers.append('bytes sent')
             #self._instrument_headers.append('bytes received')
 

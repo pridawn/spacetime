@@ -20,18 +20,23 @@ while filepath in sys.path:
     sys.path.remove(filepath)
 sys.path.append(os.path.realpath(os.path.join(filepath, "../")))
 
-from common.instrument import SpacetimeInstruments as si
+from spacetime.common.instrument import SpacetimeInstruments as si
+from spacetime.connectors.spacetime import SpacetimeConnection
+from spacetime.connectors.mysql import MySqlConnection
 from benchmark.bframe import BenchmarkFrame
 
 # BASELINE : pulls and pushes all objects of interest at every tick
 # DIFF_PUSH : pushes only modified/new/deleted objects
-# DIFF_PUSHPULL : DIFF_PUSH + pulls only modified/new/deleted objects. (DIFF_PULL ONLY WORKS WITH DIFF_PUSH, so, they need to go together)
+# DIFF_PUSHPULL : DIFF_PUSH + pulls only modified/new/deleted objects.
+#   (DIFF_PULL ONLY WORKS WITH DIFF_PUSH, so, they need to go together)
 # FULL : Current optimization state
 
-MODES = ["BASELINE", "DIFF_PUSH", "DIFF_PUSHPULL", "FULL"]
+MODES = [
+    "BASELINE", "DIFF_PUSH", "DIFF_PUSHPULL", "FULLNOWAIT", "FULLWAIT", "MYSQL"]
 
 class TestCase():
-    def __init__(self, test_module, test_suite, test_name, instances, steps, testsims):
+    def __init__(self, test_module, test_suite,
+                 test_name, instances, steps, testsims):
         self.test_module = test_module
         self.test_name = test_name
         self.test_suite = test_suite
@@ -56,21 +61,31 @@ class BenchSimulation(Process):
             self.mode = args.mode
         else:
             if args.mode:
-                print "# WARNING #: COULD NOT FIND MODE %s, DEFAULTING TO FULL" % args.mode
-            self.mode = "FULL"
+                logger.warning(
+                    "COULD NOT FIND MODE %s,"
+                    " DEFAULTING TO FULL", args.mode)
+            self.mode = "FULLNOWAIT"
 
         if args.testfile:
             filename = os.path.basename(args.testfile.split('.')[0])
             with open(args.testfile) as f:
                 for line in f.readlines():
                     if not line.strip().startswith('#'):
-                        test_suite, test_name, instances, steps = line.split(' ')
-                        module = importlib.import_module("benchmark.%s.%s" % (test_suite, test_name))
-                        testcases.append(TestCase(module, test_suite, test_name, int(instances), int(steps), args.testsims))
+                        test_suite, test_name, instances, steps = line.split(
+                            ' ')
+                        module = importlib.import_module(
+                            "benchmark.%s.%s" % (test_suite, test_name))
+                        testcases.append(
+                            TestCase(
+                                module, test_suite, test_name,
+                                int(instances), int(steps), args.testsims))
 
         else:
             module = importlib.import_module("benchmark.%s" % args.test)
-            testcases.append(TestCase(module, args.test.split('.')[0], args.test.split('.')[1], args.instances, args.steps, args.testsims))
+            testcases.append(
+                TestCase(
+                    module, args.test.split('.')[0], args.test.split('.')[1],
+                    args.instances, args.steps, args.testsims))
             filename = ''
 
         for testcase in testcases:
@@ -85,20 +100,40 @@ class BenchSimulation(Process):
             else:
                 ts = args.timestep
 
-            framebench = BenchmarkFrame(address=args.address, time_step=ts, instrument=True, profiling=True, wire_format="json")
+            connection = (
+                MySqlConnection(args.user, args.password, args.database)
+                if self.mode == "MYSQL" else
+                SpacetimeConnection(
+                    wait_for_server=True if self.mode == "FULLWAIT" else False))
+
+            framebench = BenchmarkFrame(
+                connection, address=args.address,
+                port=args.port if self.mode != "MYSQL" else None,
+                time_step=ts,
+                instrument=True, profiling=True, wire_format="json")
             if self.mode:
                 framebench.set_benchmode(self.mode)
-            framebench.attach_app(bs.BenchmarkSimulation(framebench, testcase.instances, testcase.steps, testcase.test_module.initialize, testcase.test_module.update))
+            framebench.attach_app(
+                bs.BenchmarkSimulation(
+                    framebench, testcase.instances, testcase.steps,
+                    testcase.test_module.initialize,
+                    testcase.test_module.update))
 
-            test_options = "%sn %si %ss" % (testcase.test_name, testcase.instances, testcase.steps)
+            test_options = "%sn %si %ss" % (
+                testcase.test_name, testcase.instances, testcase.steps)
 
-            filenames = [os.path.join(dir_path, "%s %s %s.csv" % (filename, "producer", test_options))]
-            si.setup_instruments([framebench], filenames=filenames,
-                                 options={'instances' : testcase.instances,
-                                            'steps': testcase.steps,
-                                            'type':'%s.%s' % (testcase.test_suite, testcase.test_name),
-                                            'sims':testcase.testsims,
-                                            'mode':self.mode})
+            filenames = [
+                os.path.join(
+                    dir_path, "%s %s %s.csv" % (
+                        filename, "producer", test_options))]
+            si.setup_instruments(
+                [framebench], filenames=filenames,
+                 options={'instances' : testcase.instances,
+                          'steps': testcase.steps,
+                          'type':'%s.%s' % (
+                              testcase.test_suite, testcase.test_name),
+                          'sims':testcase.testsims,
+                          'mode':self.mode})
             # Synchronize to start together
             self.event.set()
             framebench.run()
@@ -124,21 +159,31 @@ class TestSimulation(Process):
             self.mode = args.mode
         else:
             if args.mode:
-                print "# WARNING #: COULD NOT FIND MODE %s, DEFAULTING TO FULL" % args.mode
-            self.mode = "FULL"
+                logger.warning(
+                    "COULD NOT FIND MODE %s,"
+                    " DEFAULTING TO FULL", args.mode)
+            self.mode = "FULLNOWAIT"
 
         if args.testfile:
             filename = os.path.basename(args.testfile.split('.')[0])
             with open(args.testfile) as f:
                 for line in f.readlines():
                     if not line.strip().startswith('#'):
-                        test_suite, test_name, instances, steps = line.split(' ')
-                        module = importlib.import_module("benchmark.%s.%s" % (test_suite, test_name))
-                        testcases.append(TestCase(module, test_suite, test_name, int(instances), int(steps), args.testsims))
+                        test_suite, test_name, instances, steps = line.split(
+                            ' ')
+                        module = importlib.import_module(
+                            "benchmark.%s.%s" % (test_suite, test_name))
+                        testcases.append(
+                            TestCase(
+                                module, test_suite, test_name, int(instances),
+                                int(steps), args.testsims))
 
         else:
             module = importlib.import_module("benchmark.%s" % args.test)
-            testcases.append(TestCase(module, args.test.split('.')[0], args.test.split('.')[1], args.instances, args.steps, args.testsims))
+            testcases.append(
+                TestCase(
+                    module, args.test.split('.')[0], args.test.split('.')[1],
+                    args.instances, args.steps, args.testsims))
             filename = ''
 
         for testcase in testcases:
@@ -151,18 +196,36 @@ class TestSimulation(Process):
             else:
                 ts = args.timestep
 
-            test_options = "%sn %si %ss" % (testcase.test_name, testcase.instances, testcase.steps)
-            frametest = BenchmarkFrame(address=args.address, time_step=ts, instrument=True, profiling=True, wire_format="json")
+            test_options = "%sn %si %ss" % (
+                testcase.test_name, testcase.instances, testcase.steps)
+            connection = (
+                MySqlConnection(args.user, args.password, args.database)
+                if self.mode == "MYSQL" else
+                SpacetimeConnection(
+                    wait_for_server=True if self.mode == "FULLWAIT" else False))
+            frametest = BenchmarkFrame(
+                connection, address=args.address,
+                port=args.port if self.mode != "MYSQL" else None,
+                time_step=ts,
+                instrument=True, profiling=True, wire_format="json")
             if self.mode:
                 frametest.set_benchmode(self.mode)
-            frametest.attach_app(bt.BenchmarkTestSimulation(frametest, self.event, testcase.test_module.initialize_test, testcase.test_module.update_test))
-            filenames = [os.path.join(dir_path, "%s %s %s.csv" % (filename, "consumer", test_options))]
-            si.setup_instruments([frametest], filenames=filenames,
-                                 options={'instances' : testcase.instances,
-                                            'steps': testcase.steps,
-                                            'type':'%s.%s' % (testcase.test_suite, testcase.test_name),
-                                            'sims':testcase.testsims,
-                                            'mode':self.mode})
+            frametest.attach_app(
+                bt.BenchmarkTestSimulation(
+                    frametest, self.event,
+                    testcase.test_module.initialize_test,
+                    testcase.test_module.update_test))
+            filenames = [
+                os.path.join(dir_path, "%s %s %s.csv" % (
+                    filename, "consumer", test_options))]
+            si.setup_instruments(
+                [frametest], filenames=filenames,
+                 options={'instances' : testcase.instances,
+                          'steps': testcase.steps,
+                          'type':'%s.%s' % (
+                              testcase.test_suite, testcase.test_name),
+                          'sims':testcase.testsims,
+                          'mode':self.mode})
             # Wait for BenchSimulation to give the go
             self.event.wait()
             # Clear event, so update loop can wait for event to signal end
@@ -173,6 +236,7 @@ class TestSimulation(Process):
             #frame.loop()
 
 def setupLoggers():
+    global logger
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
@@ -189,8 +253,10 @@ def get_dirpath(args):
         mode = args.mode
     else:
         if args.mode:
-            print "# WARNING #: COULD NOT FIND MODE %s, DEFAULTING TO FULL" % args.mode
-        mode = "FULL"
+            logger.warning(
+                "COULD NOT FIND MODE %s,"
+                " DEFAULTING TO FULL", args.mode)
+        mode = "FULLNOWAIT"
     if not os.path.exists('stats'):
         os.mkdir('stats')
     strtime = time.strftime("%Y-%m-%d_%H-%M-%S")
@@ -200,15 +266,46 @@ def get_dirpath(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--instances', type=int, default=1000, help='Number of object instances to be instantiated.')
-    parser.add_argument('-ts', '--testsims', type=int, default=1, help='Number of test simulations subscribing to types <UNSUPPORTED>.')
-    parser.add_argument('-s', '--steps', type=int, default=100, help='Number of simulation steps.')
-    parser.add_argument('-t', '--test', default='subset.subset_01', help='Name of tests to be run')
-    parser.add_argument('-a', '--address', default='http://127.0.0.1:12000')
-    parser.add_argument('-tf', '--testfile', default='benchmark/testlist.txt', help='File contanining list of tests in the form of <test_suite> <test_name> <instances> <steps> <testsims>.')
-    parser.add_argument('-tsp', '--timestep', type=int, default=500, help='Time interval for each simulation step. Default is 500.')
-    parser.add_argument('-m', '--mode', default=None, help='Testbench mode, current options are: <BASELINE>, <DIFF_SENT>, <DIFF_RECEIVED>, <FULL>')
-    #parser.add_argument('-r', '--remote', help='Remote frame server location, in the form of <user>@<server>:/<path>.')
+    parser.add_argument(
+        '-i', '--instances', type=int, default=1000,
+        help='Number of object instances to be instantiated.')
+    parser.add_argument(
+        '-ts', '--testsims', type=int, default=1,
+        help='Number of test simulations subscribing to types <UNSUPPORTED>.')
+    parser.add_argument(
+        '-s', '--steps', type=int, default=100,
+        help='Number of simulation steps.')
+    parser.add_argument(
+        '-t', '--test', default='subset.subset_01',
+        help='Name of tests to be run')
+    parser.add_argument(
+        '-a', '--address', default='http://127.0.0.1')
+    parser.add_argument(
+        '-p', '--port', default='12000')
+    parser.add_argument(
+        '-tf', '--testfile', default='benchmark/testlist.txt',
+        help='File contanining list of tests in the form of '
+        '<test_suite> <test_name> <instances> <steps> <testsims>.')
+    parser.add_argument(
+        '-tsp', '--timestep', type=int, default=500,
+        help='Time interval for each simulation step. Default is 500.')
+    parser.add_argument(
+        '-m', '--mode', default=None,
+        help='Testbench mode, current options are: '
+        '<BASELINE>, <DIFF_SENT>, <DIFF_RECEIVED>, <FULL>, <MYSQL>')
+    parser.add_argument(
+        '-sqlu', '--user', default=None,
+        help='Username for MySQL if using MySQL connection')
+    parser.add_argument(
+        '-sqlp', '--password', default=None,
+        help='Password for MySQL if using MySQL connection')
+    parser.add_argument(
+        '-sqldb', '--database', default=None,
+        help='Database name for MySQL if using MySQL connection')
+    # parser.add_argument(
+    #     '-r', '--remote',
+    #     help='Remote frame server location, in the form of '
+    #     '<user>@<server>:/<path>.')
     setupLoggers()
     args = parser.parse_args()
     e = Event()
