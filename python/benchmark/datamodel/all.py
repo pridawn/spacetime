@@ -22,15 +22,15 @@ def load_all_sets(reload_modules=False):
     module_list = []
     datamodel_list = []
     p = os.getcwd()
-    for _, name, ispkg in pkgutil.iter_modules(['datamodel']):
+    for _, name, ispkg in pkgutil.iter_modules(['benchmark/datamodel']):
         if ispkg:
             try:
-                mod = importlib.import_module('datamodel.' + name)
+                mod = importlib.import_module('benchmark.datamodel.' + name)
                 module_list.append(mod)
                 if reload_modules:
                     reload(mod)
             except:
-                print "Failed to load module datamodel.%s" % name
+                print "Failed to load module benchmark.datamodel.%s" % name
                 raise
 
     for module in module_list:

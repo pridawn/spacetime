@@ -10,13 +10,13 @@ class IFrame(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, address = "http://localhost:12000/", time_step = 500):
+    def __init__(self, connector, dataframe=None, time_step=500, logfile=None):
         # Address is the remote store address:port
         # time_step is the time in milliseconds required to wait.
         pass
 
     @abstractmethod
-    def attach_app(self, app):
+    def attach_app(self, app, appname=None):
         # attach an application to the local frame
         pass
 
@@ -32,7 +32,7 @@ class IFrame(object):
         pass
 
     @abstractmethod
-    def get(self, tp, id = None):
+    def get(self, tp, oid = None):
         # args is optional parameter to send id.
         # frame.get(type) -> returns list of objects of type
         # useful for getching all objects of certain type
@@ -41,12 +41,12 @@ class IFrame(object):
         pass
 
     @abstractmethod
-    def add(self, object):
+    def add(self, obj):
         # insert new object to local store (and pushed if app has type in producer)
         pass
 
     @abstractmethod
-    def delete(self, tp, object):
+    def delete(self, tp, obj):
         # delete objects from local store (and pushed if app has type in deleter)
         pass
 

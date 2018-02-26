@@ -25,4 +25,4 @@ python/rtypes
 python/main.py
 python/test.py
 .vscode
-
+*.code-workspace
