@@ -1,5 +1,4 @@
 import logging
-import prctl
 from multiprocess import Process
 from multiprocess import Event
 from multiprocess import RLock
@@ -46,7 +45,6 @@ class Simulation(Process):
             update_hook, combinations, foldername, appname):
         super(Simulation, self).__init__(
             name="BENCHMARK_Simulation_{0}".format(appname))
-        prctl.set_name(self.name)
         self.daemon = True
         self._event = None
         self.foldername = foldername

@@ -71,3 +71,9 @@ class InstrumentedObjectlessSpacetimeConnection(ObjectlessSpacetimeConnection):
         return super(
             InstrumentedObjectlessSpacetimeConnection, self).disconnect(
                 *args, **kwargs)
+
+    @instrument("client.one_step.pull.get_update.get_versions")
+    def get_versions(self, *args, **kwargs):
+        return super(
+            InstrumentedObjectlessSpacetimeConnection, self).get_versions(
+                *args, **kwargs)

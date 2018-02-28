@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from abc import ABCMeta, abstractmethod
 from spacetime.server.start import start_server
 from spacetime.server.store import dataframe_stores
@@ -90,7 +91,10 @@ class BaseTestSuite(object):
             self.server.shutdown()
             self.server_store.shutdown()
             self.server.join()
+            self.logger.info("Completed test suite %s", self.__class__.__name__)
+            time.sleep(100)
 
     def reset_server(self):
         if self.spacetime_server:
             self.server.clear_store()
+            self.server.wait_for_reset()

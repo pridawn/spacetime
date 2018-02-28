@@ -141,7 +141,7 @@ class ObjectlessWaitTestSuite(TestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-#@register
+@register
 class MysqlTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(MysqlTestSuite, self).__init__(args, foldername, logger)

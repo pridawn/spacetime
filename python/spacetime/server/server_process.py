@@ -10,7 +10,6 @@ from threading import Timer
 from multiprocess import Process
 from multiprocess import Queue
 from multiprocess import Event
-import prctl
 
 import cbor
 from tornado.web import RequestHandler, HTTPError
@@ -137,7 +136,6 @@ class TornadoServerProcess(Process):
     def __init__(self):
         super(TornadoServerProcess, self).__init__(
             name="BENCHMARK_TornadoServerProcess")
-        prctl.set_name(self.name)
         self.daemon = True
         self.work_queue = Queue()
         self.done = False
@@ -152,7 +150,8 @@ class TornadoServerProcess(Process):
             target=tornado.ioloop.IOLoop.current().start,
             name="Thread_TornadoServer")
         self.app_thread.daemon = True
-        self.event = Event()
+        self.start_event = Event()
+        self.reset_event = Event()
 
     #################################################
     # APIs not in the same process as run
@@ -172,7 +171,12 @@ class TornadoServerProcess(Process):
         self.work_queue.put(ShutdownRequest())
 
     def wait_for_start(self):
-        self.event.wait()
+        self.start_event.wait()
+        self.start_event.clear()
+
+    def wait_for_reset(self):
+        self.reset_event.wait()
+        self.reset_event.clear()
 
     #################################################
     # APIs in the same process as run
@@ -227,13 +231,14 @@ class TornadoServerProcess(Process):
 
         self.app.listen(self.port)
         self.app_thread.start()
-        self.event.set()
+        self.start_event.set()
 
     def process_restart_store(self):
         if self.not_ready:
             raise RuntimeError(
                 "Trying to restart tornado server without setting it up first.")
         self.store.clear()
+        self.reset_event.set()
 
     def process_shutdown(self):
         self.store.shutdown()

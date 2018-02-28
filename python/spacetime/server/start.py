@@ -53,6 +53,9 @@ class SpacetimeLauncher(object):
     def wait_for_start(self):
         self.server.wait_for_start()
 
+    def wait_for_reset(self):
+        self.server.wait_for_reset()
+
 
 def start_server(store, args=None, config=None, console=False):
     if not args and not config:

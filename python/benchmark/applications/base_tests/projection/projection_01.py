@@ -29,8 +29,8 @@ def initialize_test(_):
     pass
 
 def update(sim):
-    print "[BENCHMARK STEP]: %s" % sim.curstep
+    print "[BENCHMARK PROJ1 STEP]: %s" % sim.curstep
 
 def update_test(sim):
-    print "[BENCHMARK TEST]: Step %s and BaseSetProjection count %s" % (
+    print "[BENCHMARK PROJ1 TEST]: Step %s and BaseSetProjection count %s" % (
         sim.curstep, len(sim.frame.get(BaseSetProjection)))

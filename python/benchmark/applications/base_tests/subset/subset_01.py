@@ -29,8 +29,8 @@ def initialize_test(_):
     pass
 
 def update(sim):
-    print "[BENCHMARK STEP]: %s" % sim.curstep
+    print "[BENCHMARK SUBSET1 STEP]: %s" % sim.curstep
 
 def update_test(sim):
-    print "[BENCHMARK TEST]: Step %s and SubsetHalf count %s" % (
+    print "[BENCHMARK SUBSET1 TEST]: Step %s and SubsetHalf count %s" % (
         sim.curstep, len(sim.frame.get(SubsetHalf)))

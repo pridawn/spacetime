@@ -37,10 +37,11 @@ class MySqlConnection(object):
         logger.debug("Starting logger for %s", name)
         return logger
 
-    def __init__(self, app_id, user=None, password=None, database=None):
+    def __init__(self, app_id, address="127.0.0.1", user=None, password=None, database=None):
         self.user = user
         self.password = password
         self.database = database
+        self.default_address = address
         self.host_to_connection = dict()
         self.host_to_typemap = dict()
         self.host_to_pccmap = dict()
@@ -51,6 +52,8 @@ class MySqlConnection(object):
 
 
     def add_host(self, host, typemap):
+        if host == "default":
+            host = self.default_address
         self.host_to_connection[host] = None
         self.host_to_typemap[host] = typemap
         all_types = list()
@@ -72,6 +75,8 @@ class MySqlConnection(object):
         self.host_to_all_types[host] = all_types
 
     def register(self, host):
+        if host == "default":
+            host = self.default_address
         self.host_to_connection[host] = RTypesMySQLConnection(
             user=self.user, password=self.password,
             host=host, database=self.database)
@@ -85,18 +90,24 @@ class MySqlConnection(object):
         return True
 
     def update(self, host, changes):
+        if host == "default":
+            host = self.default_address
         connection = self.host_to_connection[host]
         pcc_map = self.host_to_pccmap[host]
         connection.__rtypes_write__(changes, pcc_map)
         return True
 
     def get_updates(self, host):
+        if host == "default":
+            host = self.default_address
         read_types = self.host_to_read_types[host]
         connection = self.host_to_connection[host]
         results, not_diff = connection.__rtypes_query__(read_types)
         return True, not not_diff, results
 
     def disconnect(self, host):
+        if host == "default":
+            host = self.default_address
         connection = self.host_to_connection[host]
         all_types = self.host_to_all_types[host]
         pcc_map = self.host_to_pccmap[host]

@@ -31,8 +31,8 @@ def initialize_test(_):
 def update(sim):
     for obj in sim.frame.get(BaseSet):
         obj.Number += 1
-    print "[BENCHMARK STEP]: %s" % sim.curstep
+    print "[BENCHMARK UPDATE STEP]: %s" % sim.curstep
 
 def update_test(sim):
-    print "[BENCHMARK TEST]: Step %s and BaseSet count %s" % (
+    print "[BENCHMARK UPDATE TEST]: Step %s and BaseSet count %s" % (
         sim.curstep, len(sim.frame.get(BaseSet)))

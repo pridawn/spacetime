@@ -29,8 +29,8 @@ def update(sim):
     print "Instances", sim.instances
     for i in xrange(sim.instances):
         sim.frame.add(BaseSet((2*sim.curstep) + i))
-    print "[BENCHMARK STEP]: %s" % sim.curstep
+    print "[BENCHMARK NEW STEP]: %s" % sim.curstep
 
 def update_test(sim):
-    print "[BENCHMARK TEST]: Step %s and BaseSet count %s" % (
+    print "[BENCHMARK NEW TEST]: Step %s and BaseSet count %s" % (
         sim.curstep, len(sim.frame.get(BaseSet)))
