@@ -45,13 +45,15 @@ class dataframe_stores(object):
         self.pause_servers = False
         self.app_wire_format = dict()
         self.app_wait_for_server = dict()
+        self.instrument_filename = None
         # self.master_dataframe.add_types(self.name2class.values())
 
     def __pause(self):
         while self.pause_servers:
             sleep(0.1)
 
-    def start(self):
+    def start(self, instrument_filename):
+        self.instrument_filename = instrument_filename
         self.master_dataframe = dataframe_t(
             dataframe=(
                 dataframe()
@@ -208,3 +210,6 @@ class dataframe_stores(object):
                         setattr(
                             self.master_dataframe.object_map[gkey][oid],
                             dim._name, getattr(obj, dim._name))
+
+    def save_instrumentation_data(self):
+        pass

@@ -3,8 +3,8 @@ import json
 import time
 from abc import ABCMeta, abstractmethod
 from spacetime.server.start import start_server
-from spacetime.server.store import dataframe_stores
 from benchmark.datamodel.all import DATAMODEL_TYPES, DATAMODEL_TRIGGERS
+from benchmark.instrumented.instrumented_dataframe_store import instrumented_dataframe_stores
 
 REGISTERED_TESTSUITES = list()
 
@@ -76,7 +76,7 @@ class BaseTestSuite(object):
 
     def startup(self):
         if self.spacetime_server:
-            self.server_store = dataframe_stores(
+            self.server_store = instrumented_dataframe_stores(
                 self.name2class, self.name2triggers, self.objectless_server)
             self.server = start_server(
                 self.server_store, config=self.spacetime_config)
@@ -94,7 +94,7 @@ class BaseTestSuite(object):
             self.logger.info("Completed test suite %s", self.__class__.__name__)
             time.sleep(100)
 
-    def reset_server(self):
+    def reset_server(self, instrument_filename):
         if self.spacetime_server:
-            self.server.clear_store()
+            self.server.clear_store(instrument_filename)
             self.server.wait_for_reset()

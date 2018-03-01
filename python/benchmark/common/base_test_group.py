@@ -3,12 +3,13 @@ from multiprocess import Event
 
 
 class BaseTestGroup(object):
-    def __init__(self, logger):
+    def __init__(self, logger, server_instrument_filename):
         self.master_sims = set()
         self.client_sims = set()
         self.simulations = set()
         self.master_events = set()
         self.sim_event = Event()
+        self.server_instrument_filename = server_instrument_filename
         self.logger = logger
 
     def add_master_sim(self, master):

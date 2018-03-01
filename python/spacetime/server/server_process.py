@@ -162,10 +162,11 @@ class TornadoServerProcess(Process):
 
     def start_server(self, port, console):
         stdin = sys.stdin
-        self.work_queue.put(StartRequest(port, console, stdin))
+        self.work_queue.put(StartRequest(
+            port, console, stdin))
 
-    def restart_store(self):
-        self.work_queue.put(RestartStoreRequest())
+    def restart_store(self, instrument_filename=None):
+        self.work_queue.put(RestartStoreRequest(instrument_filename))
 
     def shutdown(self):
         self.work_queue.put(ShutdownRequest())
@@ -191,7 +192,7 @@ class TornadoServerProcess(Process):
                 elif isinstance(req, StartRequest):
                     self.process_start(req)
                 elif isinstance(req, RestartStoreRequest):
-                    self.process_restart_store()
+                    self.process_restart_store(req)
                 elif isinstance(req, ShutdownRequest):
                     self.process_shutdown()
             except KeyboardInterrupt:
@@ -233,10 +234,12 @@ class TornadoServerProcess(Process):
         self.app_thread.start()
         self.start_event.set()
 
-    def process_restart_store(self):
+    def process_restart_store(self, req):
         if self.not_ready:
             raise RuntimeError(
                 "Trying to restart tornado server without setting it up first.")
+        if req.instrument_filename:
+            self.store.save_instrumentation_data(req.instrument_filename)
         self.store.clear()
         self.reset_event.set()
 

@@ -31,7 +31,9 @@ class TestSuite(BaseTestSuite):
         return testcases
 
     def make_test_group(self, testcase):
-        test_group = BaseTestGroup(self.logger)
+        filename = "Server_{0}".format(testcase.test_name)
+        server_instrument_filename = os.path.join(self.foldername, filename)
+        test_group = BaseTestGroup(self.logger, server_instrument_filename)
         app_id_m = "Master_{0}".format(
             testcase.test_module.__name__).replace(".", "_")
         app_id_c = "Client_{0}".format(
@@ -96,10 +98,10 @@ class TestSuite(BaseTestSuite):
     def run(self):
         for test_group in self.test_groups:
             test_group.run()
-            self.reset_server()
+            self.reset_server(test_group.server_instrument_filename)
 
 
-@register
+#@register
 class FullNoWaitTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(FullNoWaitTestSuite, self).__init__(args, foldername, logger)
@@ -109,7 +111,7 @@ class FullNoWaitTestSuite(TestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-@register
+#@register
 class FullWaitTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(FullWaitTestSuite, self).__init__(args, foldername, logger)

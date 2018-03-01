@@ -4,6 +4,7 @@ import os
 from collections import namedtuple
 
 import ujson as json
+import matplotlib
 import matplotlib.pyplot as plt
 
 MAX_NCOLS = 5
@@ -133,7 +134,7 @@ def write_graphs(graphs, output_folder, separate_figures, serparate_modes):
             output_folder, "time",
             time_graphs, separate_figures)
 
-def parse_test_results(modename, testname, filename, mode, stats_node, mode_color):
+def parse_test_results(modename, testname, filename, mode, stats_node, only_avg, mode_color):
     stats_dump = json.load(open(filename))  # pylint: disable=E1101
     for part in stats_node.split("."):
         stats_dump = stats_dump[part]
@@ -142,22 +143,36 @@ def parse_test_results(modename, testname, filename, mode, stats_node, mode_colo
     xlabel = "Time steps."
     if mode in set(["TIME", "ALL"]):
         points = [p * 1000 for _, p, _ in results]
+        if only_avg:
+            p_avg = sum(points) / len(points)
+            points = [p_avg] * len(points)
         ylabel = "time in milliseconds"
         graphs["time"] = SpacetimeGraph(
             modename, testname, xlabel, ylabel, points, mode_color)
     if mode in set(["MEMORY", "ALL"]):
         points = [p / 1000000 for _, _, p in results]
+        if only_avg:
+            p_avg = sum(points) / len(points)
+            points = [p_avg] * len(points)
         ylabel = "memory in MB"
         graphs["memory"] = SpacetimeGraph(
             modename, testname, xlabel, ylabel, points, mode_color)
     return graphs
 
-def parse_mode_results(modename, stats_folder, mode, stats_node, mode_color):
+def parse_mode_results(
+        modename, stats_folder, mode,
+        stats_client_node, stats_server_node, only_avg, mode_color):
     results = dict()
     for testname in os.listdir(stats_folder):
         filename = os.path.join(stats_folder, testname)
-        results[testname] = parse_test_results(
-            modename, testname, filename, mode, stats_node, mode_color)
+        if testname.startswith("Server_"):
+            results[testname] = parse_test_results(
+                modename, testname, filename, mode,
+                stats_server_node, only_avg, mode_color)
+        else:
+            results[testname] = parse_test_results(
+                modename, testname, filename, mode,
+                stats_client_node, only_avg, mode_color)
     return results
 
 def main(args):
@@ -168,7 +183,9 @@ def main(args):
         if os.path.isdir(stat_folder):
             modename = foldername.split(".")[-2]
             graphs[modename] = parse_mode_results(
-                modename, stat_folder, args.mode, args.stats_node, colors.pop())
+                modename, stat_folder, args.mode,
+                args.stats_client_node, args.stats_server_node, args.only_avg,
+                colors.pop())
 
     write_graphs(
         graphs,
@@ -184,7 +201,11 @@ if __name__ == "__main__":
         "-o", "--output_folder", type=str, default="results",
         help="The folder where the results are to be dumped.")
     PARSER.add_argument(
-        "-n", "--stats_node", type=str, default="client.one_step",
+        "-cn", "--stats_client_node", type=str, default="client.one_step",
+        help="The states that have to be dumped out.")
+    PARSER.add_argument(
+        "-sn", "--stats_server_node", type=str,
+        default="server.dataframe.process_get_req",
         help="The states that have to be dumped out.")
     PARSER.add_argument(
         "-sf", "--separate_figures", action="store_true", default=False,
@@ -195,5 +216,9 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "-m", "--mode", type=str, default="ALL",
         help="Which results to draw. One of (ALL, MEMORY, TIME).")
+    PARSER.add_argument(
+        "-a", "--only_avg", action="store_true", default=False,
+        help="Which results to draw. One of (ALL, MEMORY, TIME).")
 
+    matplotlib.rcParams.update({"font.size": 22})
     main(PARSER.parse_args())

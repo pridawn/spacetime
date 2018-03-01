@@ -72,8 +72,16 @@ class InstrumentedObjectlessSpacetimeConnection(ObjectlessSpacetimeConnection):
             InstrumentedObjectlessSpacetimeConnection, self).disconnect(
                 *args, **kwargs)
 
-    @instrument("client.one_step.pull.get_update.get_versions")
-    def get_versions(self, *args, **kwargs):
+    @instrument("client.one_step.pull.get_update.set_incoming_versions")
+    def set_incoming_versions(self, *args, **kwargs):
         return super(
-            InstrumentedObjectlessSpacetimeConnection, self).get_versions(
+            InstrumentedObjectlessSpacetimeConnection,
+            self).set_incoming_versions(
+                *args, **kwargs)
+
+    @instrument("client.one_step.pull.get_update.get_request")
+    def get_request(self, *args, **kwargs):
+        return super(
+            InstrumentedObjectlessSpacetimeConnection,
+            self).get_request(
                 *args, **kwargs)

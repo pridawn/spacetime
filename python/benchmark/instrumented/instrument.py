@@ -49,8 +49,8 @@ class instrument(object):
         return wrapped
 
     @classmethod
-    def write_and_reset(cls, foldername):
-        instrument.write(cls.root, foldername)
+    def write_and_reset(cls, filename):
+        instrument.write(cls.root, filename)
         instrument.reset(cls.root)
 
     @staticmethod

@@ -34,5 +34,5 @@ def update(sim):
     print "[BENCHMARK UPDATE STEP]: %s" % sim.curstep
 
 def update_test(sim):
-    print "[BENCHMARK UPDATE TEST]: Step %s and BaseSet count %s" % (
-        sim.curstep, len(sim.frame.get(BaseSet)))
+    print "[BENCHMARK UPDATE TEST]: Step %s and BaseSet Num sum = %s" % (
+        sim.curstep, sum(o.Number for o in sim.frame.get(BaseSet)))

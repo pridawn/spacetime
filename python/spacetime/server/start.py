@@ -44,8 +44,8 @@ class SpacetimeLauncher(object):
     def shutdown(self):
         self.server.shutdown()
 
-    def clear_store(self):
-        self.server.restart_store()
+    def clear_store(self, instrument_filename=None):
+        self.server.restart_store(instrument_filename)
 
     def join(self):
         self.server.join()

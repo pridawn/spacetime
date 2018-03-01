@@ -353,6 +353,10 @@ class ObjectlessSpacetimeConnection(object):
             return False
         return True
 
+    def get_request(self, host, data, headers):
+        return self.host_to_connection[host].get(
+            host + "/updated", data=data, headers=headers)
+
     def get_updates(self, hostpart):
         if hostpart == "default":
             hostpart = self.default_address
@@ -365,8 +369,7 @@ class ObjectlessSpacetimeConnection(object):
                 open("pre_pull_{0}.json".format(self.app_id), "a"),
                 sort_keys=True, separators=(",", ": "), indent=4)
         data = cbor.dumps(data_d)
-        resp = self.host_to_connection[host].get(
-            host + "/updated", data=data, headers=headers)
+        resp = self.get_request(host, data, headers)
         df_cls, _ = (
             FORMATS[self.wire_format])
         dataframe_change = df_cls()

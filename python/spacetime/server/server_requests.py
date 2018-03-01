@@ -17,7 +17,8 @@ class StartRequest(ServerRequest):
 
 
 class RestartStoreRequest(ServerRequest):
-    pass
+    def __init__(self, instrument_filename=None):
+        self.instrument_filename = instrument_filename
 
 
 class ShutdownRequest(ServerRequest):
