@@ -1,5 +1,5 @@
 import sys
-from multiprocess import Event
+from multiprocessing import Event
 
 
 class BaseTestGroup(object):

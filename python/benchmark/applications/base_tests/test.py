@@ -101,7 +101,7 @@ class TestSuite(BaseTestSuite):
             self.reset_server(test_group.server_instrument_filename)
 
 
-#@register
+@register
 class FullNoWaitTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(FullNoWaitTestSuite, self).__init__(args, foldername, logger)
@@ -111,7 +111,7 @@ class FullNoWaitTestSuite(TestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-#@register
+@register
 class FullWaitTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(FullWaitTestSuite, self).__init__(args, foldername, logger)

@@ -52,8 +52,7 @@ class dataframe_stores(object):
         while self.pause_servers:
             sleep(0.1)
 
-    def start(self, instrument_filename):
-        self.instrument_filename = instrument_filename
+    def start(self):
         self.master_dataframe = dataframe_t(
             dataframe=(
                 dataframe()
@@ -146,7 +145,7 @@ class dataframe_stores(object):
         final_updates = dfc_type()
         if self.objectless_server:
             final_updates = dfc_type(
-                self.master_dataframe.get_record(changelist))
+                self.master_dataframe.get_record(changelist, app))
         else:
             if app in self.app_to_df:
                 final_updates = dfc_type(self.app_to_df[app].get_record())

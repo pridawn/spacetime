@@ -1,7 +1,7 @@
 import logging
-from multiprocess import Process
-from multiprocess import Event
-from multiprocess import RLock
+from multiprocessing import Process
+from multiprocessing import Event
+from multiprocessing import RLock
 
 
 from spacetime.client.IApplication import IApplication

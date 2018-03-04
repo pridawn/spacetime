@@ -7,9 +7,9 @@ from functools import wraps
 from threading import Thread
 from threading import Timer
 
-from multiprocess import Process
-from multiprocess import Queue
-from multiprocess import Event
+from multiprocessing import Process
+from multiprocessing import Queue
+from multiprocessing import Event
 
 import cbor
 from tornado.web import RequestHandler, HTTPError

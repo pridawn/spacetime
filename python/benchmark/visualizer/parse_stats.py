@@ -205,7 +205,7 @@ if __name__ == "__main__":
         help="The states that have to be dumped out.")
     PARSER.add_argument(
         "-sn", "--stats_server_node", type=str,
-        default="server.dataframe.process_get_req",
+        default="server.dataframe.process_apply_req",
         help="The states that have to be dumped out.")
     PARSER.add_argument(
         "-sf", "--separate_figures", action="store_true", default=False,
