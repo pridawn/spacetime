@@ -7,35 +7,36 @@ from multiprocessing import RLock
 from spacetime.client.IApplication import IApplication
 from benchmark.instrumented.instrument import instrument
 
-class BenchmarkApplication(IApplication):
-    def __init__(self, frame, instances, steps, init_hook, update_hook):
-        self.frame = frame
-        self.done = False
-        self.curstep = 0
-        self.instances = instances
-        self.simsteps = steps
-        self.update_hook = update_hook
-        self.init_hook = init_hook
-        self.logger = logging.getLogger(__name__)
-        self.master = False
-        self.event = None
+def create_application_class():
+    class BenchmarkApplication(IApplication):
+        def __init__(self, frame, instances, steps, init_hook, update_hook):
+            self.frame = frame
+            self.done = False
+            self.curstep = 0
+            self.instances = instances
+            self.simsteps = steps
+            self.update_hook = update_hook
+            self.init_hook = init_hook
+            self.logger = logging.getLogger(__name__)
+            self.master = False
+            self.event = None
 
-    def initialize(self):
-        self.init_hook(self)
-        if self.master:
-            self.event.set()
+        def initialize(self):
+            self.init_hook(self)
+            if self.master:
+                self.event.set()
 
-    def update(self):
-        if self.update_hook:
-            self.update_hook(self)
-        self.curstep += 1
-        if self.master and self.curstep >= self.simsteps:
-            self.done = True
-            self.event.set()
+        def update(self):
+            if self.update_hook:
+                self.update_hook(self)
+            self.curstep += 1
+            if self.master and self.curstep >= self.simsteps:
+                self.done = True
+                self.event.set()
 
-    def shutdown(self):
-        self.logger.info("Shutting down benchmark")
-
+        def shutdown(self):
+            self.logger.info("Shutting down benchmark")
+    return BenchmarkApplication
 
 class Simulation(Process):
     instrument_lock = RLock()
@@ -70,7 +71,7 @@ class Simulation(Process):
             self.master = True
 
     def setup(self):
-        sim_cls = BenchmarkApplication
+        sim_cls = create_application_class()
         for comb in self.combinations:
             sim_cls = comb(sim_cls)
         self.sim = sim_cls(
