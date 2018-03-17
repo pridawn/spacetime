@@ -20,6 +20,10 @@ from .IFrame import IFrame
 class ClientFrame(IFrame):  # pylint: disable=R0902
     '''Class that is the interface between the server connection and app.'''
 
+    @property
+    def appname(self):
+        return self._appname
+
     def __init__(
             self, connector, dataframe=dataframe_cl(),
             time_step=500, logfile=None):

@@ -2,6 +2,7 @@ import importlib
 import os
 from benchmark.common.base_test_suite import BaseTestSuite, TestCase, register
 from benchmark.common.base_test_group import BaseTestGroup
+from benchmark.applications.scalability_tests.scalable_base_test_group import ScalableTestGroup
 from benchmark.common.simulation import Simulation
 from benchmark.instrumented.instrumented_frame import InstrumentedFrame
 from benchmark.instrumented.instrumented_connectors import \
@@ -11,17 +12,20 @@ from benchmark.instrumented.instrumented_connectors import \
 from spacetime.client.declarations import Producer, GetterSetter, Tracker,\
     Deleter, Setter, Getter
 
+MAX_NUM_SCALING_CLIENTS = 10000
 
-class TestSuite(BaseTestSuite):
 
-    def make_test_group(self, testcase):
+class ScalableTestSuite(BaseTestSuite):
+    def make_scalable_test_group(self, testcase):
         filename = "Server_{0}".format(testcase.test_name)
         server_instrument_filename = os.path.join(self.foldername, filename)
-        test_group = BaseTestGroup(self.logger, server_instrument_filename)
-        app_id_m = "Master_{0}".format(
-            testcase.test_module.__name__).replace(".", "_")
-        app_id_c = "Client_{0}".format(
-            testcase.test_module.__name__).replace(".", "_")
+        groupname = testcase.test_name
+        print("TEST: 2", self.server)
+        scalable_test_group = ScalableTestGroup(
+            groupname, self.logger, self.server, self.foldername,
+            server_instrument_filename)
+        app_id_m = "Master_{0}".format(groupname)
+        app_id_c = "Client_{0}".format(groupname)
 
         connector_m = self.connector(app_id_m, **self.kwargs)
         connector_c = self.connector(app_id_c, **self.kwargs)
@@ -53,15 +57,27 @@ class TestSuite(BaseTestSuite):
             frame_m, testcase.instances, testcase.steps,
             testcase.test_module.initialize, testcase.test_module.update,
             combination_m, foldername_m, app_id_m)
-        client = Simulation(
-            frame_c, testcase.instances, testcase.steps,
-            testcase.test_module.initialize_test,
-            testcase.test_module.update_test,
-            combination_c, foldername_c, app_id_c)
+        client_gen = (
+            Simulation(
+                frame_c, testcase.instances, testcase.steps,
+                testcase.test_module.initialize_test,
+                testcase.test_module.update_test,
+                combination_c, foldername_c, app_id_c + "_{0}".format(i))
+            for i in xrange(MAX_NUM_SCALING_CLIENTS))
+        scalable_test_group.add_master_sim(master)
+        scalable_test_group.store_client_sim_generator(client_gen)
 
-        test_group.add_master_sim(master)
-        test_group.add_client_sim(client)
-        return test_group
+        return scalable_test_group
+
+    def load_test_cases(self):
+        self.test_groups = self.make_test_groups()
+
+    def make_test_groups(self):
+        testfile = os.path.join(os.path.dirname(__file__), "testlist.txt")
+        testcases = ScalableTestSuite.read_test_cases(
+            testfile, "scalability_tests")
+        return [
+            self.make_scalable_test_group(testcase) for testcase in testcases]
 
     def __init__(self, args, foldername, logger):
         self.test_groups = list()
@@ -69,15 +85,7 @@ class TestSuite(BaseTestSuite):
         self.connector = InstrumentedSpacetimeConnection
         self.kwargs = {
             "wire_format": "json", "wait_for_server": self.wait_for_server}
-        super(TestSuite, self).__init__(args, foldername, logger)
-
-    def load_test_cases(self):
-        self.test_groups = self.make_test_groups()
-
-    def make_test_groups(self):
-        testfile = os.path.join(os.path.dirname(__file__), "testlist.txt")
-        testcases = TestSuite.read_test_cases(testfile, "base_tests")
-        return [self.make_test_group(testcase) for testcase in testcases]
+        super(ScalableTestSuite, self).__init__(args, foldername, logger)
 
     def run(self):
         for test_group in self.test_groups:
@@ -86,9 +94,9 @@ class TestSuite(BaseTestSuite):
 
 
 # @register
-class FullNoWaitTestSuite(TestSuite):
+class FullNoWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
-        super(FullNoWaitTestSuite, self).__init__(args, foldername, logger)
+        super(FullNoWaitScaleTestSuite, self).__init__(args, foldername, logger)
         self.connector = InstrumentedSpacetimeConnection
         self.kwargs = {
             "address": "http://{0}:{1}".format(self.address, self.port),
@@ -96,9 +104,9 @@ class FullNoWaitTestSuite(TestSuite):
 
 
 # @register
-class FullWaitTestSuite(TestSuite):
+class FullWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
-        super(FullWaitTestSuite, self).__init__(args, foldername, logger)
+        super(FullWaitScaleTestSuite, self).__init__(args, foldername, logger)
         self.connector = InstrumentedSpacetimeConnection
         self.wait_for_server = True
         self.kwargs = {
@@ -106,10 +114,10 @@ class FullWaitTestSuite(TestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-# @register
-class ObjectlessNoWaitTestSuite(TestSuite):
+@register
+class ObjectlessNoWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
-        super(ObjectlessNoWaitTestSuite, self).__init__(args, foldername, logger)
+        super(ObjectlessNoWaitScaleTestSuite, self).__init__(args, foldername, logger)
         self.connector = InstrumentedObjectlessSpacetimeConnection
         self.kwargs = {
             "address": "http://{0}:{1}".format(self.address, self.port),
@@ -117,23 +125,11 @@ class ObjectlessNoWaitTestSuite(TestSuite):
 
 
 # @register
-class ObjectlessWaitTestSuite(TestSuite):
+class ObjectlessWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
-        super(ObjectlessWaitTestSuite, self).__init__(args, foldername, logger)
+        super(ObjectlessWaitScaleTestSuite, self).__init__(args, foldername, logger)
         self.connector = InstrumentedObjectlessSpacetimeConnection
         self.wait_for_server = True
         self.kwargs = {
             "address": "http://{0}:{1}".format(self.address, self.port),
             "wire_format": "json", "wait_for_server": self.wait_for_server}
-
-
-# @register
-class MysqlTestSuite(TestSuite):
-    def __init__(self, args, foldername, logger):
-        super(MysqlTestSuite, self).__init__(args, foldername, logger)
-        self.connector = InstrumentedMySqlConnection
-        self.kwargs = {
-            "address": self.address,
-            "user": args.user,
-            "password": args.password,
-            "database": args.database}

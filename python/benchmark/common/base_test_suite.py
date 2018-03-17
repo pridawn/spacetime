@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import importlib
 from abc import ABCMeta, abstractmethod
 from spacetime.server.start import start_server
 from benchmark.datamodel.all import DATAMODEL_TYPES, DATAMODEL_TRIGGERS
@@ -25,6 +26,23 @@ class TestCase(object):
 
 class BaseTestSuite(object):
     __metaclass__ = ABCMeta
+
+    @staticmethod
+    def read_test_cases(testfile, test_folder):
+        testcases = list()
+        with open(testfile) as t_file:
+            for line in t_file.readlines():
+                line = line.strip()
+                if not line.startswith('#'):
+                    test_suite, test_name, instances, steps = line.split()
+                    module = importlib.import_module(
+                        "benchmark.applications.%s.%s.%s" % (
+                            test_folder, test_suite, test_name))
+                    testcases.append(
+                        TestCase(
+                            module, test_suite, test_name,
+                            int(instances), int(steps)))
+        return testcases
 
     def __init__(self, args, foldername, logger):
         self.args = args

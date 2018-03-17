@@ -23,3 +23,6 @@ class RestartStoreRequest(ServerRequest):
 
 class ShutdownRequest(ServerRequest):
     pass
+
+class GetQueueSizeRequest(ServerRequest):
+    pass

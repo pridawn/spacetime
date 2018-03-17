@@ -39,8 +39,8 @@ def run_tests(args):
             "{0}.{1}".format(name, time.ctime().replace(" ", "-").replace(":", "_")))
         logger = setup_logger(name, args.logfile)
         test_suite = testcls(args, foldername, logger)
-        test_suite.load_test_cases()
         test_suite.startup()
+        test_suite.load_test_cases()
         test_suite.run()
         test_suite.cleanup()
 

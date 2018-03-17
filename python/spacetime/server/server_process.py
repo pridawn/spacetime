@@ -15,7 +15,7 @@ import cbor
 from tornado.web import RequestHandler, HTTPError
 import tornado.ioloop
 
-from spacetime.server.server_requests import RestartStoreRequest, SetUpRequest, ShutdownRequest, StartRequest
+from spacetime.server.server_requests import RestartStoreRequest, SetUpRequest, ShutdownRequest, StartRequest, GetQueueSizeRequest
 from spacetime.server.console import SpacetimeConsole
 
 class BaseRegisterHandler(RequestHandler):
@@ -65,6 +65,11 @@ def get_request_handlers(process, store, handle_exceptions):
             data = self.request.body
             store.update(sim, data)
 
+    class GetStoreStatus(RequestHandler):
+        def get(self, status_name):
+            if status_name == "queue_size":
+                self.set_header("content-type", "text/plain")
+                self.write(str(store.master_dataframe.queue.qsize()))
 
     class Register(BaseRegisterHandler):
         @handle_exceptions
@@ -86,7 +91,7 @@ def get_request_handlers(process, store, handle_exceptions):
         def delete(self, sim):
             process.disconnect(sim)
 
-    return GetAllUpdatedTracked, Register
+    return GetAllUpdatedTracked, Register, GetStoreStatus
 
 def SetupLoggers(debug) :
     if debug:
@@ -152,6 +157,7 @@ class TornadoServerProcess(Process):
         self.app_thread.daemon = True
         self.start_event = Event()
         self.reset_event = Event()
+        self.get_size_queue = Queue()
 
     #################################################
     # APIs not in the same process as run
@@ -178,6 +184,10 @@ class TornadoServerProcess(Process):
     def wait_for_reset(self):
         self.reset_event.wait()
         self.reset_event.clear()
+    
+    def get_server_queue_size(self):
+        self.work_queue.put(GetQueueSizeRequest())
+        return self.get_size_queue.get()
 
     #################################################
     # APIs in the same process as run
@@ -195,6 +205,8 @@ class TornadoServerProcess(Process):
                     self.process_restart_store(req)
                 elif isinstance(req, ShutdownRequest):
                     self.process_shutdown()
+                elif isinstance(req, GetQueueSizeRequest):
+                    self.get_size_queue.put(self.store.master_dataframe.queue.qsize())
             except KeyboardInterrupt:
                 self.process_shutdown()
 
@@ -206,11 +218,12 @@ class TornadoServerProcess(Process):
         self.timeout = req.timeout
         handle_exceptions = get_exception_handler(
             self.timers, self.store, self.logger)
-        get_all_updated_tracked, register = get_request_handlers(
-            self, self.store, handle_exceptions)
+        get_all_updated_tracked, register, get_store_status = (
+            get_request_handlers(self, self.store, handle_exceptions))
         self.app = tornado.web.Application([
             (r"/([a-zA-Z0-9_-]+)/updated", get_all_updated_tracked),
-            (r"/([a-zA-Z0-9_-]+)", register)])
+            (r"/([a-zA-Z0-9_-]+)", register),
+            (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
 
     def process_start(self, req):
         if self.not_ready:
