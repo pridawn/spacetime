@@ -140,7 +140,7 @@ class SpacetimeConnection(object):
             dictmsg = changes.SerializeToString()
             headers = {"content-type": content_type}
             resp = self.host_to_connection[host].post(
-                host + "/updated", data=dictmsg, headers=headers)
+                host + "/postupdated", data=dictmsg, headers=headers)
         except TypeError:
             self.logger.exception(
                 "error encoding obj. Object: %s", changes)
@@ -154,7 +154,8 @@ class SpacetimeConnection(object):
         if hostpart == "default":
             hostpart = self.default_address
         host = hostpart + self.app_id
-        resp = self.host_to_connection[host].get(host + "/updated", data=dict())
+        resp = self.host_to_connection[host].get(
+            host + "/getupdated", data=dict())
         df_cls, _ = (
             FORMATS[self.wire_format])
         dataframe_change = df_cls()
@@ -343,7 +344,7 @@ class ObjectlessSpacetimeConnection(object):
             dictmsg = changes.SerializeToString()
             headers = {"content-type": content_type}
             resp = self.host_to_connection[host].post(
-                host + "/updated", data=dictmsg, headers=headers)
+                host + "/postupdated", data=dictmsg, headers=headers)
         except TypeError:
             self.logger.exception(
                 "error encoding obj. Object: %s", changes)
@@ -355,7 +356,7 @@ class ObjectlessSpacetimeConnection(object):
 
     def get_request(self, host, data, headers):
         return self.host_to_connection[host].get(
-            host + "/updated", data=data, headers=headers)
+            host + "/getupdated", data=data, headers=headers)
 
     def get_updates(self, hostpart):
         if hostpart == "default":

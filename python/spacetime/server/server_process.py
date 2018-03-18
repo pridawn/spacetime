@@ -23,7 +23,7 @@ class BaseRegisterHandler(RequestHandler):
     pass
 
 
-class BaseGetAllUpdatedTracked(RequestHandler):
+class BaseAllUpdatedTracked(RequestHandler):
     pass
 
 def get_exception_handler(timers, store, logger):
@@ -47,7 +47,7 @@ def get_exception_handler(timers, store, logger):
     return handle_exceptions
 
 def get_request_handlers(process, store, handle_exceptions, thread_pool):
-    class GetAllUpdatedTracked(BaseGetAllUpdatedTracked):
+    class GetAllUpdatedTracked(BaseAllUpdatedTracked):
         @asynchronous
         @handle_exceptions
         def get(self, sim):
@@ -67,6 +67,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
             self.write(data)
             self.finish()
 
+    class PostAllUpdatedTracked(BaseAllUpdatedTracked):
         @asynchronous
         @handle_exceptions
         def post(self, sim):
@@ -105,7 +106,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
         def delete(self, sim):
             process.disconnect(sim)
 
-    return GetAllUpdatedTracked, Register, GetStoreStatus
+    return GetAllUpdatedTracked, PostAllUpdatedTracked, Register, GetStoreStatus
 
 def SetupLoggers(debug) :
     if debug:
@@ -235,11 +236,13 @@ class TornadoServerProcess(Process):
         self.thread_pool.daemon = True
         handle_exceptions = get_exception_handler(
             self.timers, self.store, self.logger)
-        get_all_updated_tracked, register, get_store_status = (
+        (get_all_updated_tracked, post_all_updated_tracked,
+         register, get_store_status) = (
             get_request_handlers(
                 self, self.store, handle_exceptions, self.thread_pool))
         self.app = tornado.web.Application([
-            (r"/([a-zA-Z0-9_-]+)/updated", get_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
             (r"/([a-zA-Z0-9_-]+)", register),
             (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
 
