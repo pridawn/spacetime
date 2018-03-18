@@ -63,6 +63,10 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 args=(sim, changelist, self.complete_update))
 
         def complete_update(self, sim, data, content_type):
+            io_loop = tornado.ioloop.IOLoop.current()
+            io_loop.add_callback(self._complete_update, sim, data, content_type)
+
+        def _complete_update(self, sim, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
             self.finish()
@@ -76,6 +80,10 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 store.update, args=(sim, data, self.complete_push))
 
         def complete_push(self, sim):
+            io_loop = tornado.ioloop.IOLoop.current()
+            io_loop.add_callback(self._complete_push, sim)
+
+        def _complete_push(self, sim):
             self.finish()
 
     class GetStoreStatus(RequestHandler):
@@ -238,8 +246,8 @@ class TornadoServerProcess(Process):
             self.timers, self.store, self.logger)
         (get_all_updated_tracked, post_all_updated_tracked,
          register, get_store_status) = (
-            get_request_handlers(
-                self, self.store, handle_exceptions, self.thread_pool))
+             get_request_handlers(
+                 self, self.store, handle_exceptions, self.thread_pool))
         self.app = tornado.web.Application([
             (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
             (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
