@@ -10,9 +10,10 @@ from threading import Timer
 from multiprocessing import Process
 from multiprocessing import Queue
 from multiprocessing import Event
+from multiprocessing.pool import ThreadPool
 
 import cbor
-from tornado.web import RequestHandler, HTTPError
+from tornado.web import RequestHandler, HTTPError, asynchronous
 import tornado.ioloop
 
 from spacetime.server.server_requests import RestartStoreRequest, SetUpRequest, ShutdownRequest, StartRequest, GetQueueSizeRequest
@@ -45,8 +46,9 @@ def get_exception_handler(timers, store, logger):
         return wrapped
     return handle_exceptions
 
-def get_request_handlers(process, store, handle_exceptions):
+def get_request_handlers(process, store, handle_exceptions, thread_pool):
     class GetAllUpdatedTracked(BaseGetAllUpdatedTracked):
+        @asynchronous
         @handle_exceptions
         def get(self, sim):
             changelist_str = (
@@ -56,14 +58,24 @@ def get_request_handlers(process, store, handle_exceptions):
                 cbor.loads(changelist_str)
                 if changelist_str is not None else
                 dict())
-            data, content_type = store.getupdates(sim, changelist)
+            thread_pool.apply_async(
+                store.getupdates,
+                args=(sim, changelist, self.complete_update))
+
+        def complete_update(self, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
+            self.finish()
 
+        @asynchronous
         @handle_exceptions
         def post(self, sim):
             data = self.request.body
-            store.update(sim, data)
+            thread_pool.apply_async(
+                store.update, args=(sim, data, self.complete_push))
+
+        def complete_push(self):
+            self.finish()
 
     class GetStoreStatus(RequestHandler):
         def get(self, status_name):
@@ -78,7 +90,9 @@ def get_request_handlers(process, store, handle_exceptions):
             json_dict = json.loads(data)
             typemap = json_dict["sim_typemap"]
             wire_format = (
-                json_dict["wire_format"] if "wire_format" in json_dict else "json")
+                json_dict["wire_format"]
+                if "wire_format" in json_dict else
+                "json")
             wait_for_server = (
                 json_dict["wait_for_server"]
                 if "wait_for_server" in json_dict else
@@ -158,6 +172,7 @@ class TornadoServerProcess(Process):
         self.start_event = Event()
         self.reset_event = Event()
         self.get_size_queue = Queue()
+        self.thread_pool = None
 
     #################################################
     # APIs not in the same process as run
@@ -184,7 +199,7 @@ class TornadoServerProcess(Process):
     def wait_for_reset(self):
         self.reset_event.wait()
         self.reset_event.clear()
-    
+
     def get_server_queue_size(self):
         self.work_queue.put(GetQueueSizeRequest())
         return self.get_size_queue.get()
@@ -216,10 +231,13 @@ class TornadoServerProcess(Process):
         self.store = req.store
         self.timers = dict()
         self.timeout = req.timeout
+        self.thread_pool = ThreadPool()
+        self.thread_pool.daemon = True
         handle_exceptions = get_exception_handler(
             self.timers, self.store, self.logger)
         get_all_updated_tracked, register, get_store_status = (
-            get_request_handlers(self, self.store, handle_exceptions))
+            get_request_handlers(
+                self, self.store, handle_exceptions, self.thread_pool))
         self.app = tornado.web.Application([
             (r"/([a-zA-Z0-9_-]+)/updated", get_all_updated_tracked),
             (r"/([a-zA-Z0-9_-]+)", register),
