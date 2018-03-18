@@ -2,7 +2,7 @@ import datetime
 import time
 import sys
 import os
-from multiprocess import Event
+from multiprocessing import Event
 
 from benchmark.common.base_test_group import BaseTestGroup
 
