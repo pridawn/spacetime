@@ -138,7 +138,7 @@ class dataframe_stores(object):
                 dfc, except_app=app,
                 wait_for_server=self.app_wait_for_server[app])
         if callback:
-            callback()
+            callback(app)
 
     def getupdates(self, app, changelist=None, callback=None):
         self.__pause()
@@ -152,7 +152,7 @@ class dataframe_stores(object):
                 final_updates = dfc_type(self.app_to_df[app].get_record())
                 self.app_to_df[app].clear_record()
         if callback:
-            callback(final_updates.SerializeToString(), content_type)
+            callback(app, final_updates.SerializeToString(), content_type)
         else:
             return final_updates.SerializeToString(), content_type
 

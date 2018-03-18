@@ -62,7 +62,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 store.getupdates,
                 args=(sim, changelist, self.complete_update))
 
-        def complete_update(self, data, content_type):
+        def complete_update(self, sim, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
             self.finish()
@@ -74,7 +74,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
             thread_pool.apply_async(
                 store.update, args=(sim, data, self.complete_push))
 
-        def complete_push(self):
+        def complete_push(self, sim):
             self.finish()
 
     class GetStoreStatus(RequestHandler):
