@@ -61,6 +61,7 @@ class SpacetimeConnection(object):
         self.app_id = app_id
         self.default_address = address.rstrip("/") + "/"
         self.logger = setup_logger("spacetime-connector" + app_id, logfile)
+        self.delete_joins = True
 
     def __handle_request_errors(self, resp):
         if resp.status_code == 401:
@@ -194,6 +195,7 @@ class ObjectlessSpacetimeConnection(object):
         self.default_address = address.rstrip("/") + "/"
         self.logger = setup_logger(
             "spacetime-connector" + app_id, logfile)
+        self.delete_joins = False
 
     def __handle_request_errors(self, resp):
         if resp.status_code == 401:

@@ -106,7 +106,7 @@ class FullWaitTestSuite(TestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-# @register
+@register
 class ObjectlessNoWaitTestSuite(TestSuite):
     def __init__(self, args, foldername, logger):
         super(ObjectlessNoWaitTestSuite, self).__init__(args, foldername, logger)

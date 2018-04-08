@@ -11,6 +11,7 @@ from rtypes.pcc.types.projection import projection
 from rtypes.pcc.types.subset import subset
 from rtypes.pcc.types.join import join
 from rtypes.pcc.types.parameter import parameter
+from rtypes.pcc.this import THIS
 import random
 import math
 import uuid
@@ -22,37 +23,37 @@ class Vector3(object):
         self.Z = Z
 
     # -----------------------------------------------------------------
-    def VectorDistanceSquared(self, other) :
+    def VectorDistanceSquared(self, other):
         dx = self.X - other.X
         dy = self.Y - other.Y
         dz = self.Z - other.Z
         return dx * dx + dy * dy + dz * dz
 
     # -----------------------------------------------------------------
-    def VectorDistance(self, other) :
+    def VectorDistance(self, other):
         return math.sqrt(self.VectorDistanceSquared(other))
 
     # -----------------------------------------------------------------
-    def Length(self) :
+    def Length(self):
         return math.sqrt(self.VectorDistanceSquared(ZeroVector))
 
     # -----------------------------------------------------------------
-    def LengthSquared(self) :
+    def LengthSquared(self):
         return self.VectorDistanceSquared(ZeroVector)
 
-    def AddVector(self, other) :
+    def AddVector(self, other):
         return Vector3(self.X + other.X, self.Y + other.Y, self.Z + other.Z)
 
     # -----------------------------------------------------------------
-    def SubVector(self, other) :
+    def SubVector(self, other):
         return Vector3(self.X - other.X, self.Y - other.Y, self.Z - other.Z)
 
     # -----------------------------------------------------------------
-    def ScaleConstant(self, factor) :
+    def ScaleConstant(self, factor):
         return Vector3(self.X * factor, self.Y * factor, self.Z * factor)
 
     # -----------------------------------------------------------------
-    def ScaleVector(self, scale) :
+    def ScaleVector(self, scale):
         return Vector3(self.X * scale.X, self.Y * scale.Y, self.Z * scale.Z)
 
     def ToList(self):
@@ -63,7 +64,7 @@ class Vector3(object):
         return Vector3()
 
     # -----------------------------------------------------------------
-    def Equals(self, other) :
+    def Equals(self, other):
         if isinstance(other, Vector3):
             return self.X == other.X and self.Y == other.Y and self.Z == other.Z
         elif isinstance(other, tuple) or isinstance(other, list):
@@ -72,7 +73,7 @@ class Vector3(object):
                 and other[1] == self.Y and other[2] == self.Z)
 
     # -----------------------------------------------------------------
-    def ApproxEquals(self, other, tolerance) :
+    def ApproxEquals(self, other, tolerance):
         return self.VectorDistanceSquared(other) < (tolerance * tolerance)
 
     def __json__(self):
@@ -88,19 +89,19 @@ class Vector3(object):
         return not self.__eq__(other)
 
     # -----------------------------------------------------------------
-    def __add__(self, other) :
+    def __add__(self, other):
         return self.AddVector(other)
 
     # -----------------------------------------------------------------
-    def __sub__(self, other) :
+    def __sub__(self, other):
         return self.SubVector(other)
 
     # -----------------------------------------------------------------
-    def __mul__(self, factor) :
+    def __mul__(self, factor):
         return self.ScaleConstant(factor)
 
     # -----------------------------------------------------------------
-    def __div__(self, factor) :
+    def __div__(self, factor):
         return self.ScaleConstant(1.0 / factor)
 
     @staticmethod
@@ -224,7 +225,7 @@ class BaseSet(object):
         self.Number = num
         self.List = [i for i in xrange(20)]
         #self.Set = set([i for i in xrange(20)])
-        self.Dictionary = { str(k) : k for k in xrange(20)}
+        self.Dictionary = {str(k): k for k in xrange(20)}
         self.Property1 = "Property 1"
         self.Property2 = "Property 2"
         self.Property3 = "Property 3"
@@ -251,83 +252,22 @@ class SubsetAll(BaseSet):
     def __predicate__(oid):
         return True
 
-@join(BaseSet, BaseSet)
+
+@subset(THIS)
+@join(b1=BaseSet, b2=BaseSet)
 class JoinHalf(object):
+    @predicate(THIS.b1.Number, THIS.b1.ID, THIS.b2.ID)
+    def __predicate__(b1num, b1id, b2id):
+        return b1num % 2 == 0 and b1id == b2id
 
-    @primarykey(str)
-    def ID(self):
-        return self._ID
 
-    @ID.setter
-    def ID(self, value):
-        self._ID = value
-
-    @dimension(BaseSet)
-    def b1(self):
-        return self._b1
-
-    @b1.setter
-    def b1(self, value):
-        self._b1 = value
-
-    @dimension(BaseSet)
-    def b2(self):
-        return self._b2
-
-    @b2.setter
-    def b2(self, value):
-        self._b2 = value
-
-    def __init__(self, b1, b2):
-        self.b1 = b1
-        self.b2 = b2
-
-    def __init__(self, b1, b2):
-        self.b1 = b1
-        self.b2 = b2
-
-    @staticmethod
-    def __predicate__(b1, b2):
-        return b1.Number % 2 == 0 and b1.ID == b2.ID
-
-@join(BaseSet, BaseSet)
+@subset(THIS)
+@join(b1=BaseSet, b2=BaseSet)
 class JoinAll(object):
+    @predicate(THIS.b1.ID, THIS.b2.ID)
+    def __predicate__(b1id, b2id):
+        return b1id == b2id
 
-    @primarykey(str)
-    def ID(self):
-        return self._ID
-
-    @ID.setter
-    def ID(self, value):
-        self._ID = value
-
-    @dimension(BaseSet)
-    def b1(self):
-        return self._b1
-
-    @b1.setter
-    def b1(self, value):
-        self._b1 = value
-
-    @dimension(BaseSet)
-    def b2(self):
-        return self._b2
-
-    @b2.setter
-    def b2(self, value):
-        self._b2 = value
-
-    def __init__(self, b1, b2):
-        self.b1 = b1
-        self.b2 = b2
-
-    def __init__(self, b1, b2):
-        self.b1 = b1
-        self.b2 = b2
-
-    @staticmethod
-    def __predicate__(b1, b2):
-        return b1.ID == b2.ID
 
 @parameter(BaseSet)
 @subset(BaseSet)
@@ -335,6 +275,7 @@ class ParameterHalf(BaseSet):
     @staticmethod
     def __predicate__(b1, b2s):
         return b1.Number % 2 == 0
+
 
 @parameter(BaseSet)
 @subset(BaseSet)

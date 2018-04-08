@@ -119,7 +119,7 @@ class FullWaitScaleTestSuite(ScalableTestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-@register
+# @register
 class ObjectlessNoWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
         super(ObjectlessNoWaitScaleTestSuite, self).__init__(args, foldername, logger)

@@ -399,7 +399,8 @@ class ClientFrame(IFrame):  # pylint: disable=R0902
 
     def _process_pull_resp(self, only_diff, resp):
         if resp and "gc" in resp:
-            self.object_store.clear_joins()
+            if self.connector.delete_joins:
+                self.object_store.clear_joins()
             self.object_store.apply_changes(
                 resp, track=False, only_diff=only_diff)
 
