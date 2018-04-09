@@ -126,7 +126,7 @@ class dataframe_stores(object):
         self.__pause()
         pass
 
-    def update(self, app, changes):
+    def update(self, app, changes, callback=None):
         # print json.dumps(
         #       changes, sort_keys=True, separators=(',', ': '), indent=4)
         self.__pause()
@@ -137,9 +137,10 @@ class dataframe_stores(object):
             self.master_dataframe.apply_changes(
                 dfc, except_app=app,
                 wait_for_server=self.app_wait_for_server[app])
-        return
+        if callback:
+            callback(app)
 
-    def getupdates(self, app, changelist=None):
+    def getupdates(self, app, changelist=None, callback=None):
         self.__pause()
         dfc_type, content_type = FORMATS[self.app_wire_format[app]]
         final_updates = dfc_type()
@@ -150,7 +151,10 @@ class dataframe_stores(object):
             if app in self.app_to_df:
                 final_updates = dfc_type(self.app_to_df[app].get_record())
                 self.app_to_df[app].clear_record()
-        return final_updates.SerializeToString(), content_type
+        if callback:
+            callback(app, final_updates.SerializeToString(), content_type)
+        else:
+            return final_updates.SerializeToString(), content_type
 
     def get_app_list(self):
         return self.app_to_df.keys()

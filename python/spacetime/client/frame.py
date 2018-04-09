@@ -20,6 +20,10 @@ from .IFrame import IFrame
 class ClientFrame(IFrame):  # pylint: disable=R0902
     '''Class that is the interface between the server connection and app.'''
 
+    @property
+    def appname(self):
+        return self._appname
+
     def __init__(
             self, connector, dataframe=dataframe_cl(),
             time_step=500, logfile=None):
@@ -395,7 +399,8 @@ class ClientFrame(IFrame):  # pylint: disable=R0902
 
     def _process_pull_resp(self, only_diff, resp):
         if resp and "gc" in resp:
-            self.object_store.clear_joins()
+            if self.connector.delete_joins:
+                self.object_store.clear_joins()
             self.object_store.apply_changes(
                 resp, track=False, only_diff=only_diff)
 

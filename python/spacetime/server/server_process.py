@@ -10,19 +10,20 @@ from threading import Timer
 from multiprocessing import Process
 from multiprocessing import Queue
 from multiprocessing import Event
+from multiprocessing.pool import ThreadPool
 
 import cbor
-from tornado.web import RequestHandler, HTTPError
+from tornado.web import RequestHandler, HTTPError, asynchronous
 import tornado.ioloop
 
-from spacetime.server.server_requests import RestartStoreRequest, SetUpRequest, ShutdownRequest, StartRequest
+from spacetime.server.server_requests import RestartStoreRequest, SetUpRequest, ShutdownRequest, StartRequest, GetQueueSizeRequest
 from spacetime.server.console import SpacetimeConsole
 
 class BaseRegisterHandler(RequestHandler):
     pass
 
 
-class BaseGetAllUpdatedTracked(RequestHandler):
+class BaseAllUpdatedTracked(RequestHandler):
     pass
 
 def get_exception_handler(timers, store, logger):
@@ -45,8 +46,9 @@ def get_exception_handler(timers, store, logger):
         return wrapped
     return handle_exceptions
 
-def get_request_handlers(process, store, handle_exceptions):
-    class GetAllUpdatedTracked(BaseGetAllUpdatedTracked):
+def get_request_handlers(process, store, handle_exceptions, thread_pool):
+    class GetAllUpdatedTracked(BaseAllUpdatedTracked):
+        @asynchronous
         @handle_exceptions
         def get(self, sim):
             changelist_str = (
@@ -56,15 +58,39 @@ def get_request_handlers(process, store, handle_exceptions):
                 cbor.loads(changelist_str)
                 if changelist_str is not None else
                 dict())
-            data, content_type = store.getupdates(sim, changelist)
+            thread_pool.apply_async(
+                store.getupdates,
+                args=(sim, changelist, self.complete_update))
+
+        def complete_update(self, sim, data, content_type):
+            io_loop = tornado.ioloop.IOLoop.current()
+            io_loop.add_callback(self._complete_update, sim, data, content_type)
+
+        def _complete_update(self, sim, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
+            self.finish()
 
+    class PostAllUpdatedTracked(BaseAllUpdatedTracked):
+        @asynchronous
         @handle_exceptions
         def post(self, sim):
             data = self.request.body
-            store.update(sim, data)
+            thread_pool.apply_async(
+                store.update, args=(sim, data, self.complete_push))
 
+        def complete_push(self, sim):
+            io_loop = tornado.ioloop.IOLoop.current()
+            io_loop.add_callback(self._complete_push, sim)
+
+        def _complete_push(self, sim):
+            self.finish()
+
+    class GetStoreStatus(RequestHandler):
+        def get(self, status_name):
+            if status_name == "queue_size":
+                self.set_header("content-type", "text/plain")
+                self.write(str(store.master_dataframe.queue.qsize()))
 
     class Register(BaseRegisterHandler):
         @handle_exceptions
@@ -73,7 +99,9 @@ def get_request_handlers(process, store, handle_exceptions):
             json_dict = json.loads(data)
             typemap = json_dict["sim_typemap"]
             wire_format = (
-                json_dict["wire_format"] if "wire_format" in json_dict else "json")
+                json_dict["wire_format"]
+                if "wire_format" in json_dict else
+                "json")
             wait_for_server = (
                 json_dict["wait_for_server"]
                 if "wait_for_server" in json_dict else
@@ -86,7 +114,7 @@ def get_request_handlers(process, store, handle_exceptions):
         def delete(self, sim):
             process.disconnect(sim)
 
-    return GetAllUpdatedTracked, Register
+    return GetAllUpdatedTracked, PostAllUpdatedTracked, Register, GetStoreStatus
 
 def SetupLoggers(debug) :
     if debug:
@@ -152,6 +180,8 @@ class TornadoServerProcess(Process):
         self.app_thread.daemon = True
         self.start_event = Event()
         self.reset_event = Event()
+        self.get_size_queue = Queue()
+        self.thread_pool = None
 
     #################################################
     # APIs not in the same process as run
@@ -179,6 +209,10 @@ class TornadoServerProcess(Process):
         self.reset_event.wait()
         self.reset_event.clear()
 
+    def get_server_queue_size(self):
+        self.work_queue.put(GetQueueSizeRequest())
+        return self.get_size_queue.get()
+
     #################################################
     # APIs in the same process as run
     #################################################
@@ -195,6 +229,8 @@ class TornadoServerProcess(Process):
                     self.process_restart_store(req)
                 elif isinstance(req, ShutdownRequest):
                     self.process_shutdown()
+                elif isinstance(req, GetQueueSizeRequest):
+                    self.get_size_queue.put(self.store.master_dataframe.queue.qsize())
             except KeyboardInterrupt:
                 self.process_shutdown()
 
@@ -204,13 +240,19 @@ class TornadoServerProcess(Process):
         self.store = req.store
         self.timers = dict()
         self.timeout = req.timeout
+        self.thread_pool = ThreadPool()
+        self.thread_pool.daemon = True
         handle_exceptions = get_exception_handler(
             self.timers, self.store, self.logger)
-        get_all_updated_tracked, register = get_request_handlers(
-            self, self.store, handle_exceptions)
+        (get_all_updated_tracked, post_all_updated_tracked,
+         register, get_store_status) = (
+             get_request_handlers(
+                 self, self.store, handle_exceptions, self.thread_pool))
         self.app = tornado.web.Application([
-            (r"/([a-zA-Z0-9_-]+)/updated", get_all_updated_tracked),
-            (r"/([a-zA-Z0-9_-]+)", register)])
+            (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)", register),
+            (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
 
     def process_start(self, req):
         if self.not_ready:

@@ -1,0 +1,2 @@
+# <test_suite> <test_name> <instances> <steps> <test_scalability>
+update update_01 1000 500

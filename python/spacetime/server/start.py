@@ -55,7 +55,9 @@ class SpacetimeLauncher(object):
 
     def wait_for_reset(self):
         self.server.wait_for_reset()
-
+    
+    def get_queue_size(self):
+        return self.server.get_server_queue_size()
 
 def start_server(store, args=None, config=None, console=False):
     if not args and not config:

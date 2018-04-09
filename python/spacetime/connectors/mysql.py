@@ -49,7 +49,7 @@ class MySqlConnection(object):
         self.host_to_all_types = dict()
         self.logger = MySqlConnection.setup_logger(
             "spacetime-connector" + app_id)
-
+        self.delete_joins = True
 
     def add_host(self, host, typemap):
         if host == "default":
