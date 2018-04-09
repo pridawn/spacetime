@@ -17,19 +17,10 @@ class ScalableTestGroup(BaseTestGroup):
         self.master_sims = list()
         self.client_sims = list()
         self.simulations = list()
-
         self.master_events = set()
         self.sim_event = Event()
         self.logger = logger
         self.server = server
-        self.sim_time = 0
-        self.time_counter = 0
-
-        self.need_client = True
-        self.stored_master_sim = None
-        self.stored_client_sim = None
-        self.unprocessed_sims = list()
-        self.processed_sims = list()
         self.client_gen = None
         self.log_foldername = log_foldername
         self.server_instrument_filename = server_instrument_filename
@@ -38,7 +29,6 @@ class ScalableTestGroup(BaseTestGroup):
         self.logfile = os.path.join(
             self.log_foldername,
             "{0}_queue_size.txt".format(groupname))
-
 
     def add_master_sim(self, master):
         event = Event()
@@ -73,7 +63,7 @@ class ScalableTestGroup(BaseTestGroup):
             self.logger.info("Closed all sims.")
             self.logger.info("Stats have been written to file.")
         except KeyboardInterrupt:
-            for sim in self.processed_sims:
+            for sim in self.simulations:
                 if sim.is_alive():
                     sim.terminate()
             sys.exit(0)

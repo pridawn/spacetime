@@ -1,0 +1,3356 @@
+{
+    "gc": {
+        "benchmark.datamodel.base_tests.datamodel.BaseSet": {
+            "0": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "0"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 0
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "1": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "1"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 1
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "2": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "2"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 2
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "3": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "3"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 3
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "4": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "4"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 4
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "5": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "5"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 5
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "6": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "6"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 6
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "7": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "7"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 7
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "8": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "8"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 8
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            },
+            "9": {
+                "dims": {
+                    "Dictionary": {
+                        "type": 11,
+                        "value": [
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "11"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 11
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "10"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 10
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "13"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 13
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "12"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 12
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "15"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 15
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "14"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 14
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "17"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 17
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "16"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 16
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "19"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 19
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "18"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 18
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "1"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "0"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 0
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "3"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "2"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "5"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 5
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "4"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 4
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "7"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 7
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "6"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 6
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "9"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 9
+                                }
+                            },
+                            {
+                                "k": {
+                                    "type": 3,
+                                    "value": "8"
+                                },
+                                "v": {
+                                    "type": 1,
+                                    "value": 8
+                                }
+                            }
+                        ]
+                    },
+                    "ID": {
+                        "type": 3,
+                        "value": "9"
+                    },
+                    "List": {
+                        "type": 10,
+                        "value": [
+                            {
+                                "type": 1,
+                                "value": 0
+                            },
+                            {
+                                "type": 1,
+                                "value": 1
+                            },
+                            {
+                                "type": 1,
+                                "value": 2
+                            },
+                            {
+                                "type": 1,
+                                "value": 3
+                            },
+                            {
+                                "type": 1,
+                                "value": 4
+                            },
+                            {
+                                "type": 1,
+                                "value": 5
+                            },
+                            {
+                                "type": 1,
+                                "value": 6
+                            },
+                            {
+                                "type": 1,
+                                "value": 7
+                            },
+                            {
+                                "type": 1,
+                                "value": 8
+                            },
+                            {
+                                "type": 1,
+                                "value": 9
+                            },
+                            {
+                                "type": 1,
+                                "value": 10
+                            },
+                            {
+                                "type": 1,
+                                "value": 11
+                            },
+                            {
+                                "type": 1,
+                                "value": 12
+                            },
+                            {
+                                "type": 1,
+                                "value": 13
+                            },
+                            {
+                                "type": 1,
+                                "value": 14
+                            },
+                            {
+                                "type": 1,
+                                "value": 15
+                            },
+                            {
+                                "type": 1,
+                                "value": 16
+                            },
+                            {
+                                "type": 1,
+                                "value": 17
+                            },
+                            {
+                                "type": 1,
+                                "value": 18
+                            },
+                            {
+                                "type": 1,
+                                "value": 19
+                            }
+                        ]
+                    },
+                    "Name": {
+                        "type": 3,
+                        "value": ""
+                    },
+                    "Number": {
+                        "type": 1,
+                        "value": 9
+                    },
+                    "Property1": {
+                        "type": 3,
+                        "value": "Property 1"
+                    },
+                    "Property2": {
+                        "type": 3,
+                        "value": "Property 2"
+                    },
+                    "Property3": {
+                        "type": 3,
+                        "value": "Property 3"
+                    },
+                    "Property4": {
+                        "type": 3,
+                        "value": "Property 4"
+                    },
+                    "Property5": {
+                        "type": 3,
+                        "value": "Property 5"
+                    }
+                },
+                "types": {
+                    "benchmark.datamodel.base_tests.datamodel.BaseSet": 1
+                },
+                "version": [
+                    null,
+                    1523299315.315821
+                ]
+            }
+        }
+    }
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}{
+    "gc": {}
+}

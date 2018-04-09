@@ -41,7 +41,6 @@ class ScalableTestSuite(BaseTestSuite):
         filename = "Server_{0}".format(testcase.test_name)
         server_instrument_filename = os.path.join(self.foldername, filename)
         groupname = testcase.test_name
-        print("TEST: 2", self.server)
         scalable_test_group = ScalableTestGroup(
             groupname, self.logger, self.server, self.foldername,
             server_instrument_filename)
