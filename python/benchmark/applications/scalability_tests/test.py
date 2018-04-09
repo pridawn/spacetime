@@ -97,7 +97,7 @@ class ScalableTestSuite(BaseTestSuite):
             self.reset_server(test_group.server_instrument_filename)
 
 
-# @register
+@register
 class FullNoWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
         super(FullNoWaitScaleTestSuite, self).__init__(args, foldername, logger)
@@ -107,7 +107,7 @@ class FullNoWaitScaleTestSuite(ScalableTestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-# @register
+@register
 class FullWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
         super(FullWaitScaleTestSuite, self).__init__(args, foldername, logger)
@@ -118,7 +118,7 @@ class FullWaitScaleTestSuite(ScalableTestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-# @register
+@register
 class ObjectlessNoWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
         super(ObjectlessNoWaitScaleTestSuite, self).__init__(args, foldername, logger)
@@ -128,7 +128,7 @@ class ObjectlessNoWaitScaleTestSuite(ScalableTestSuite):
             "wire_format": "json", "wait_for_server": self.wait_for_server}
 
 
-# @register
+@register
 class ObjectlessWaitScaleTestSuite(ScalableTestSuite):
     def __init__(self, args, foldername, logger):
         super(ObjectlessWaitScaleTestSuite, self).__init__(args, foldername, logger)
