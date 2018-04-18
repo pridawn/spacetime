@@ -10,6 +10,7 @@ import inspect
 import os
 from time import sleep
 import sys, traceback
+from urlparse import urlparse, parse_qs
 
 from rtypes.dataframe.dataframe_threading import dataframe_wrapper as dataframe_t
 from rtypes.dataframe.dataframe import dataframe
@@ -82,17 +83,21 @@ class dataframe_stores(object):
     def load_all_sets(self, app_name):
         # make all the stuff
         app_id = app_name.split("_")[-1]
-        uas, filename, typenames = generate_datamodel(app_id)
-        classes = list()
-        mod = importlib.import_module("datamodel.search." + filename + "_datamodel")
+        _, filename, _ = generate_datamodel(app_id)
+        mod = importlib.import_module(
+            "datamodel.search." + filename + "_datamodel")
         reload(mod)
         for name, cls in inspect.getmembers(mod):
             if hasattr(cls, "__rtypes_metadata__"):
-               self.name2class[cls.__rtypes_metadata__.name] = cls
+                self.name2class[cls.__rtypes_metadata__.name] = cls
         return {
-            Modes.Producing: set([self.name2class["datamodel.search.{0}_datamodel.{0}Link".format(app_id)]]),
-            Modes.GetterSetter: set([self.name2class["datamodel.search.{0}_datamodel.One{0}UnProcessedLink".format(app_id)]])
-            }
+            Modes.Producing: set([
+                self.name2class["datamodel.search.{0}_datamodel.{0}Link".format(
+                    app_id)]]),
+            Modes.GetterSetter: set([
+                self.name2class["datamodel.search.{0}_datamodel."
+                                "One{0}UnProcessedLink".format(app_id)]])
+        }
 
     def parse_type(self, app, mode_map):
         # checks if the tpname is in dataframe yet
@@ -104,7 +109,6 @@ class dataframe_stores(object):
         else:
             # builds the appropriate types and files
             return self.load_all_sets(app)
-        return tp
 
     def register_app(self, app, type_map,
                      wire_format="json", wait_for_server=False):
@@ -120,7 +124,9 @@ class dataframe_stores(object):
                 set(real_type_map.setdefault(mode, set())))
 
 
-        all_types = [self.name2class[str(tpam.__rtypes_metadata__)] for tpam in types_to_add_to_master]
+        all_types = [
+            self.name2class[tpam.__rtypes_metadata__.name]
+            for tpam in types_to_add_to_master]
         self.master_dataframe.add_types(all_types)
 
         # Look at invidual types.
@@ -153,7 +159,6 @@ class dataframe_stores(object):
                         "datamodel.search.{0}_datamodel.{0}Link".format(app)]))
                 self.app_to_stats[app] = (total - undownloaded, undownloaded)
             except KeyError:
-                print "First time entry for app", app
                 self.app_to_stats[app] = (0, 0)
         # Adding to name2class
         for tp in all_types:
@@ -174,6 +179,41 @@ class dataframe_stores(object):
         self.__pause()
         pass
 
+    def mark_as_downloaded(self, link_key, obj_changes):
+        downloaded += 1
+        
+        link_as_file = self.make_link_into_file(link_key)
+        if not os.path.exists(link_as_file):
+            # add the data to the file
+            link_data = {
+                dimname: dimchange
+                for dimname, dimchange in (
+                    obj_changes["dims"].iteritems())
+                if dimname is not "download_complete"}
+            
+            cbor.dump(link_data, open(link_as_file, "wb"))
+            print "WRITES THE FILE"
+
+        new_data = {
+            "download_complete": {
+                "type": Record.BOOL, "value": True}}
+        if "error_reason" in obj_changes["dims"]:
+            new_data["error_reason"] = (
+                obj_changes["dims"]["error_reason"])
+        else:
+            new_data["error_reason"] = {
+                "type": Record.STRING, "value": ""}
+        obj_changes["dims"] = new_data
+
+    def check_uploaded(self, app, link_key, obj_changes):
+        url = "http://" + link_key
+        if not self.is_valid(url):
+            if not os.path.exists(INVALIDS):
+                os.makedirs(INVALIDS)
+                invalid_f = os.join(INVALIDS, app)
+                open(invalid_f, "a").write(
+                    "{0} :: {1}\n".format(time.time(), url))
+
     # spacetime automatically pushing changes into server
     def update(self, app, changes, callback=None):
         try:
@@ -183,38 +223,23 @@ class dataframe_stores(object):
             dfc.ParseFromString(changes)
             # print "DFC :::: ", dfc
             downloaded, undownloaded = self.app_to_stats[app]
-            group_tpname = "datamodel.search.{0}_datamodel.{0}Link".format(app)
-            if group_tpname in dfc["gc"]:
-                for link_key, obj_changes in dfc['gc'][group_tpname].iteritems():
-                    if obj_changes["dims"]["download_complete"]["value"]:
-                        downloaded += 1
-                        undownloaded -= 1
-                        link_as_file = self.make_link_into_file(link_key)
-                        if not os.path.exists(link_as_file):
-                            # add the data to the file
-                            link_data = {
-                                dimname: dimchange
-                                for dimname, dimchange in (
-                                    obj_changes["dims"].iteritems())
-                                if dimname is not "download_complete"}
-                            
-                            cbor.dump(link_data, open(link_as_file, "wb"))
-                            print "WRITES THE FILE"
-
-                        new_data = {
-                            "download_complete": {
-                                "type": Record.BOOL, "value": True}}
-                        if "error_reason" in obj_changes["dims"]:
-                            new_data["error_reason"] = (
-                                obj_changes["dims"]["error_reason"])
+            if app.startswith("CrawlerFrame_"):
+                group_tpname = "datamodel.search.{0}_datamodel.{0}Link".format(
+                    app)
+                if group_tpname in dfc["gc"]:
+                    for link_key, obj_changes in (
+                            dfc['gc'][group_tpname].iteritems()):
+                        if ("download_complete" in obj_changes["dims"] 
+                                and obj_changes["dims"][
+                                    "download_complete"]["value"]):
+                            self.mark_as_downloaded(link_key, obj_changes)
+                            downloaded += 1
+                            undownloaded -= 1
                         else:
-                            new_data["error_reason"] = {
-                                "type": Record.STRING, "value": ""}
-                        obj_changes["dims"] = new_data
-                    else:
-                        undownloaded += 1
+                            self.check_uploaded()
+                            undownloaded += 1
 
-                self.app_to_stats[app] = (downloaded, undownloaded)
+                    self.app_to_stats[app] = (downloaded, undownloaded)
             if app in self.app_to_df:
                 self.master_dataframe.apply_changes(
                     dfc, except_app=app,
@@ -237,19 +262,24 @@ class dataframe_stores(object):
                 # change this before callback
                 final_updates = dfc_type(
                     self.master_dataframe.get_record(changelist, app))
-
-                group_tpname = "datamodel.search.{0}_datamodel.{0}Link".format(app)
-                if group_tpname in final_updates["gc"]:
-                    for link_key in final_updates['gc'][group_tpname]:
-                        if "dims" in final_updates['gc'][group_tpname][link_key]:
-                            self.check_base_dir_for_crawler_data()
-                            link_as_file = self.make_link_into_file(link_key)
-                            if os.path.exists(link_as_file):
-                                # this means that the data already exist on disk
-                                # so grab the data rather than downloading it
-                                data = cbor.load(open(link_as_file, "rb"))
-                                final_updates['gc'][group_tpname][link_key]["dims"].update(data)
-                final_updates["stats"] = self.app_to_stats[app]
+                if app.startswith("CrawlerFrame_"):
+                    group_tpname = (
+                        "datamodel.search.{0}_datamodel.{0}Link".format(app))
+                    if group_tpname in final_updates["gc"]:
+                        for link_key, link_changes in (
+                                final_updates['gc'][group_tpname].iteritems()):
+                            if "dims" in link_changes:
+                                self.check_base_dir_for_crawler_data()
+                                link_as_file = self.make_link_into_file(
+                                    link_key)
+                                if os.path.exists(link_as_file):
+                                    # this means that the data
+                                    # already exist on disk
+                                    # so grab the data rather
+                                    # than downloading it
+                                    data = cbor.load(open(link_as_file, "rb"))
+                                    link_changes["dims"].update(data)
+                    final_updates["stats"] = self.app_to_stats[app]
             else:
                 if app in self.app_to_df:
                     final_updates = dfc_type(self.app_to_df[app].get_record())
@@ -279,30 +309,6 @@ class dataframe_stores(object):
                 hashed_link = str(hash(link))
         
         return os.path.join(CRAWLER_SAVE_FILE, hashed_link)
-
-    def make_hashed_link_into_file(self, hashed_link):
-        """ Make the hashed link into a file in the base dir """
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def get_app_list(self):
         return self.app_to_df.keys()
@@ -364,3 +370,23 @@ class dataframe_stores(object):
 
     def save_instrumentation_data(self):
         pass
+
+    def is_valid(self, url):
+        parsed = urlparse(url)
+        if parsed.scheme not in set(["http", "https"]):
+            return False
+        try:
+            return (".ics.uci.edu" in parsed.hostname
+                and not re.match(
+                    ".*\.(css|js|bmp|gif|jpe?g|ico|png|tiff?|mid|mp2|mp3|mp4"
+                    "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+                    "|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe"
+                    "|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1"
+                    "|thmx|mso|arff|rtf|jar|csv"
+                    "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+                and "calendar.ics.uci.edu" not in parsed.hostname
+                and "archive.ics.uci.edu/ml/dataset?" not in url
+                and "ganglia.ics.uci.edu" not in url)
+        except TypeError:
+            print ("TypeError for ", parsed)
+            return False

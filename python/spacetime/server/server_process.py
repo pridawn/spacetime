@@ -119,6 +119,16 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
         def delete(self, sim):
             process.disconnect(sim)
 
+    class GetInvalids(RequestHandler):
+        def get(self, app):
+            filename = os.path.join(store.INVALIDS, app)
+            data = (
+                open(filename).read()
+                if os.path.exists(filename) else
+                "NO INVALIDS DETECTED.")
+            self.set_header("content-type", "text/plain")
+            self.write(data)
+
     return GetAllUpdatedTracked, PostAllUpdatedTracked, Register, GetStoreStatus
 
 def SetupLoggers(debug) :
@@ -250,12 +260,13 @@ class TornadoServerProcess(Process):
         handle_exceptions = get_exception_handler(
             self.timers, self.store, self.logger)
         (get_all_updated_tracked, post_all_updated_tracked,
-         register, get_store_status) = (
+         register, get_store_status, get_invalids) = (
              get_request_handlers(
                  self, self.store, handle_exceptions, self.thread_pool))
         self.app = tornado.web.Application([
             (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
             (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/invalid", get_invalids)
             (r"/([a-zA-Z0-9_-]+)", register),
             (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
 
