@@ -24,7 +24,7 @@ def setup_logger(name, file_path=None):
         name: Name of the client application.
         file_path: logfile to write logs into.
 
-    Exceptions:
+    Exce Clearptions:
     None
     """
 
@@ -189,7 +189,7 @@ class ObjectlessSpacetimeConnection(object):
         self.host_to_all_types = dict()
         self.host_to_changelist = dict()
         self.wait_for_server = wait_for_server
-        self.debug = debug
+        self.debug = True
         self.app_id = app_id
         self.wire_format = wire_format
         self.default_address = address.rstrip("/") + "/"
@@ -386,6 +386,7 @@ class ObjectlessSpacetimeConnection(object):
                     open("post_pull_{0}.json".format(self.app_id), "a"),
                     sort_keys=True, separators=(",", ": "), indent=4)
             self.set_incoming_versions(host, dataframe_change)
+            self.get_crawler_stats(dataframe_change)
             return True, True, dataframe_change
         except HTTPError:
             self.__handle_request_errors(resp)
@@ -398,3 +399,7 @@ class ObjectlessSpacetimeConnection(object):
             hostpart = self.default_address
         host = hostpart + self.app_id
         _ = requests.delete(host)
+
+    def get_crawler_stats(self, dataframe_change):
+        if "stats" in dataframe_change:
+            print "PULL complete. Number of links in server {0} (D) + {1} (UD)".format(*(dataframe_change["stats"]))

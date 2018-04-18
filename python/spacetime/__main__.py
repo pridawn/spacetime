@@ -7,7 +7,7 @@ Created on Apr 19, 2016
 import argparse
 import json
 from subprocess import Popen
-from datamodel.all import DATAMODEL_TYPES, DATAMODEL_TRIGGERS
+from datamodel.all import DATAMODEL_TYPES
 from spacetime.server.start import start_server
 from spacetime.server.store import dataframe_stores
 
@@ -36,41 +36,25 @@ if __name__ == "__main__":
         '-cf', '--config_file', type=str, default=None,
         help='Json file with spacetime configurations stored.')
     PARSER.add_argument(
-        '-o', '--objectless', action='store_true', default=False,
+        '-o', '--object', action='store_true', default=False,
         help='Sets up the server using objectless dataframe. '
              'If False, full dataframe is used.')
     PARSER.add_argument(
         '-ltp', '--load_types', nargs="+", default=list(),
         help='loads the types from the datamodel.all.DATAMODEL_TYPES '
              'that has to be loaded.')
-    PARSER.add_argument(
-        '-ltr', '--load_triggers', nargs="+", default=list(),
-        help='loads the types from the datamodel.all.DATAMODEL_TRIGGERS '
-             'that has to be loaded.')
 
     ARGS = PARSER.parse_args()
     CONFIG = json.load(open(ARGS.config_file)) if ARGS.config_file else dict()
     LOAD_TYPES = (
         CONFIG["load_types"] if "load_types" in CONFIG else ARGS.load_types)
-    LOAD_TRIGGERS = (
-        CONFIG["load_triggers"]
-        if "load_triggers" in CONFIG else
-        ARGS.load_triggers)
     NAME2CLASS = {
         tp.__rtypes_metadata__.name: tp
         for tp in DATAMODEL_TYPES
         if ((tp.__rtypes_metadata__.name in set(LOAD_TYPES))
             if LOAD_TYPES else
             True)}
-    NAME2TRIGGERS = {
-        trigger.procedure.__module__ + "." + trigger.procedure.__name__: trigger
-        for trigger in DATAMODEL_TRIGGERS
-        if ((trigger.procedure.__module__
-             + "."
-             + trigger.procedure.__name__) in set(LOAD_TRIGGERS)
-            if LOAD_TRIGGERS else
-            True)}
-    STORE = dataframe_stores(NAME2CLASS, NAME2TRIGGERS, ARGS.objectless)
+    STORE = dataframe_stores(NAME2CLASS, dict(), not ARGS.object)
     try:
         SERVER = start_server(
             STORE, args=ARGS, config=CONFIG, console=False)

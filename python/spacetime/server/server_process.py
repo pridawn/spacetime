@@ -38,6 +38,7 @@ def get_exception_handler(timers, store, logger):
                             500, "%s not registered to the store." % args[1])
                 ret = f(*args, **kwds)
             except Exception as e:
+                print "BEEP", e, e.__class__.__name__
                 logger.exception(
                     "Exception %s handling function %s:", repr(e), f.func_name)
                 raise HTTPError(
@@ -62,10 +63,12 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 store.getupdates,
                 args=(sim, changelist, self.complete_update))
 
+        @handle_exceptions
         def complete_update(self, sim, data, content_type):
             io_loop = tornado.ioloop.IOLoop.current()
             io_loop.add_callback(self._complete_update, sim, data, content_type)
 
+        @handle_exceptions
         def _complete_update(self, sim, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
@@ -79,10 +82,12 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
             thread_pool.apply_async(
                 store.update, args=(sim, data, self.complete_push))
 
+        @handle_exceptions
         def complete_push(self, sim):
             io_loop = tornado.ioloop.IOLoop.current()
             io_loop.add_callback(self._complete_push, sim)
 
+        @handle_exceptions
         def _complete_push(self, sim):
             self.finish()
 

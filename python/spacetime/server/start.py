@@ -25,7 +25,7 @@ class SpacetimeLauncher(object):
         self.trackip = args.trackip
         self.timeout = args.timeout
         self.clearempty = args.clearempty
-        self.objectless_dataframe = args.objectless
+        self.objectless_dataframe = not args.object
 
     def load_config_from_dict(self, config):
         self.port = config.setdefault("port", self.port)
