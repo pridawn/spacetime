@@ -114,6 +114,12 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
             store.register_app(
                 sim, typemap, wire_format=wire_format,
                 wait_for_server=wait_for_server)
+            if sim.startswith("CrawlerFrame_"):
+                inv_f = os.path.join(store.INVALIDS, sim[len("CrawlerFrame_"):])
+                if os.path.exists(inv_f):
+                    open(inv_f, "a").write(
+                        "############# RESTART DETECTED AT {0} ###########\n".format(time.time()))
+
 
         @handle_exceptions
         def delete(self, sim):
@@ -129,7 +135,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
             self.set_header("content-type", "text/plain")
             self.write(data)
 
-    return GetAllUpdatedTracked, PostAllUpdatedTracked, Register, GetStoreStatus
+    return GetAllUpdatedTracked, PostAllUpdatedTracked, Register, GetStoreStatus, GetInvalids
 
 def SetupLoggers(debug) :
     if debug:
@@ -266,7 +272,7 @@ class TornadoServerProcess(Process):
         self.app = tornado.web.Application([
             (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
             (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
-            (r"/([a-zA-Z0-9_-]+)/invalid", get_invalids)
+            (r"/([a-zA-Z0-9_-]+)/invalid", get_invalids),
             (r"/([a-zA-Z0-9_-]+)", register),
             (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
 

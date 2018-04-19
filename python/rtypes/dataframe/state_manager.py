@@ -103,13 +103,12 @@ class StateManager(object):
             impure_pccs[tp_obj] = (
                 tp_obj.check_membership_from_serial_collection(
                     self.type_to_obj_dimstate, built_collections=impure_pccs))
-
         impure_gpchanges = dict()
         for tpname in impure_pccs_to_process:
             tp_obj = self.type_manager.get_requested_type_from_str(tpname)
             if tp_obj not in impure_pccs or not impure_pccs[tp_obj]:
                 continue
-            if self.type_manager.metadata_is_impure(tp_obj):
+            if self.type_manager.metadata_is_join(tp_obj):
                 for oid in impure_pccs[tp_obj]:
                     noids, moids, doids = self.__setup_join(
                         oid, impure_pccs[tp_obj][oid], tp_obj, final_record,
@@ -134,7 +133,7 @@ class StateManager(object):
                                 "del": set()})["del"].update(doids[gpobj])
             else:
                 self.type_to_objids[tpname] = set(impure_pccs[tp_obj])
-
+                pcc_types_to_process.add(tpname)
         if impure_gpchanges:
             for tpobj, changes in impure_gpchanges.iteritems():
                 new_oids, mod_oids, del_oids = (
@@ -142,15 +141,18 @@ class StateManager(object):
                 self.__process_get_pccs(
                     tpobj, new_oids, mod_oids, del_oids, final_record,
                     changelist, app)
-
         for tpname in pcc_types_to_process:
             tp_obj = self.type_manager.get_requested_type_from_str(tpname)
             new_oids, mod_oids, del_oids = self.__get_oid_change_buckets(
                 tpname, changelist[tpname])
+
             self.__process_get_pccs(
                 tp_obj, new_oids, mod_oids, del_oids, final_record,
                 changelist, app)
-
+        for tp_obj in impure_pccs:
+            if tpname in self.type_to_objids:
+                del self.type_to_objids[tpname]
+        
         return {"gc": final_record}
 
     #################################################
@@ -367,20 +369,22 @@ class StateManager(object):
                 if not group_changelist.has_obj(oid):
                     if "dims" in obj_changes and prev_version is None:
                         # Should be a new object.
-                        group_changelist.add_obj(
-                            oid, curr_version, {"dims": obj_changes["dims"]},
-                            except_app)
-                        objects_to_check_pcc.setdefault(
-                            groupname, set()).add(oid)
-                        self.type_to_objids[groupname].add(oid)
+                        if oid not in self.type_to_objids[groupname]:
+                            group_changelist.add_obj(
+                                oid, curr_version, {"dims": obj_changes["dims"]},
+                                except_app)
+                            objects_to_check_pcc.setdefault(
+                                groupname, set()).add(oid)
+                            self.type_to_objids[groupname].add(oid)
                     elif "dims" in obj_changes:
                         raise RuntimeError(
                             "Something went wrong. Obj not in record, "
                             "but has last known version? What gives?")
                     # No dims no object, ignore and continue
                     continue
+                print "CHECKOUT", obj_changes["types"]
                 if (groupname in obj_changes["types"]
-                        and obj_changes["types"] == Event.Delete):
+                        and obj_changes["types"][groupname] == Event.Delete):
                     # Delete all records of the object. Not required any more.
                     group_changelist.delete_obj(oid)
                     deleted_objs.setdefault(groupname, set()).add(oid)
@@ -422,6 +426,8 @@ class StateManager(object):
             for pcc_type in tm.meta_to_pure_members(group_type):
                 if pcc_type.name in self.type_to_objids:
                     self.type_to_objids[pcc_type.name].difference_update(oids)
+                if groupname in self.type_to_objids:
+                    self.type_to_objids[groupname].difference_update(oids)
 
         for groupname, oids in objects_to_check_pcc.iteritems():
             try:

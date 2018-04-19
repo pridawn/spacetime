@@ -9,7 +9,9 @@ import importlib
 import inspect
 import os
 from time import sleep
+import time
 import sys, traceback
+import re
 from urlparse import urlparse, parse_qs
 
 from rtypes.dataframe.dataframe_threading import dataframe_wrapper as dataframe_t
@@ -43,6 +45,7 @@ ALL_MODES = set([Modes.Deleter,
 CRAWLER_SAVE_FILE = "spacetime_crawler_data"
 
 class dataframe_stores(object):
+    INVALIDS = "invalids"
     @property
     def is_alive(self):
         return self.master_dataframe.isAlive()
@@ -58,6 +61,7 @@ class dataframe_stores(object):
         self.app_wait_for_server = dict()
         self.instrument_filename = None
         self.app_to_stats = dict()
+        self.check_base_dir_for_crawler_data()
         # self.master_dataframe.add_types(self.name2class.values())
 
     def __pause(self):
@@ -180,8 +184,6 @@ class dataframe_stores(object):
         pass
 
     def mark_as_downloaded(self, link_key, obj_changes):
-        downloaded += 1
-        
         link_as_file = self.make_link_into_file(link_key)
         if not os.path.exists(link_as_file):
             # add the data to the file
@@ -192,7 +194,6 @@ class dataframe_stores(object):
                 if dimname is not "download_complete"}
             
             cbor.dump(link_data, open(link_as_file, "wb"))
-            print "WRITES THE FILE"
 
         new_data = {
             "download_complete": {
@@ -205,14 +206,14 @@ class dataframe_stores(object):
                 "type": Record.STRING, "value": ""}
         obj_changes["dims"] = new_data
 
-    def check_uploaded(self, app, link_key, obj_changes):
+    def check_uploaded(self, app, link_key):
         url = "http://" + link_key
         if not self.is_valid(url):
-            if not os.path.exists(INVALIDS):
-                os.makedirs(INVALIDS)
-                invalid_f = os.join(INVALIDS, app)
-                open(invalid_f, "a").write(
-                    "{0} :: {1}\n".format(time.time(), url))
+            if not os.path.exists(dataframe_stores.INVALIDS):
+                os.makedirs(dataframe_stores.INVALIDS)
+            invalid_f = os.path.join(dataframe_stores.INVALIDS, app)
+            open(invalid_f, "a").write(
+                "{0} :: {1}\n".format(time.time(), url))
 
     # spacetime automatically pushing changes into server
     def update(self, app, changes, callback=None):
@@ -224,8 +225,9 @@ class dataframe_stores(object):
             # print "DFC :::: ", dfc
             downloaded, undownloaded = self.app_to_stats[app]
             if app.startswith("CrawlerFrame_"):
+                crawler_user = app[len("CrawlerFrame_"):]
                 group_tpname = "datamodel.search.{0}_datamodel.{0}Link".format(
-                    app)
+                    crawler_user)
                 if group_tpname in dfc["gc"]:
                     for link_key, obj_changes in (
                             dfc['gc'][group_tpname].iteritems()):
@@ -236,7 +238,7 @@ class dataframe_stores(object):
                             downloaded += 1
                             undownloaded -= 1
                         else:
-                            self.check_uploaded()
+                            self.check_uploaded(crawler_user, link_key)
                             undownloaded += 1
 
                     self.app_to_stats[app] = (downloaded, undownloaded)
@@ -249,6 +251,8 @@ class dataframe_stores(object):
                 callback(app)
         except Exception, e:
             print "U ERROR!!!", e, e.__class__.__name__
+            ex_type, ex, tb = sys.exc_info()
+            traceback.print_tb(tb)
             raise
 
     # thier pull into client
@@ -263,13 +267,14 @@ class dataframe_stores(object):
                 final_updates = dfc_type(
                     self.master_dataframe.get_record(changelist, app))
                 if app.startswith("CrawlerFrame_"):
+                    crawler_name = app[len("CrawlerFrame_"):]
                     group_tpname = (
-                        "datamodel.search.{0}_datamodel.{0}Link".format(app))
+                        "datamodel.search.{0}_datamodel.{0}Link".format(
+                            crawler_name))
                     if group_tpname in final_updates["gc"]:
                         for link_key, link_changes in (
                                 final_updates['gc'][group_tpname].iteritems()):
                             if "dims" in link_changes:
-                                self.check_base_dir_for_crawler_data()
                                 link_as_file = self.make_link_into_file(
                                     link_key)
                                 if os.path.exists(link_as_file):
@@ -373,6 +378,7 @@ class dataframe_stores(object):
 
     def is_valid(self, url):
         parsed = urlparse(url)
+        categories = list([])
         if parsed.scheme not in set(["http", "https"]):
             return False
         try:

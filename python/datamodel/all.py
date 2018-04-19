@@ -6,22 +6,16 @@ Created on Apr 19, 2016
 import pkgutil
 import importlib
 import inspect
-import os
-
-from rtypes.pcc.triggers import TriggerProcedure
 
 DATAMODEL_TYPES = []
-DATAMODEL_TRIGGERS = []
 def load_all_sets(reload_modules=False):
-    global DATAMODEL_TYPES, DATAMODEL_TRIGGERS
+    global DATAMODEL_TYPES
     OLD_DATAMODEL_TYPES = DATAMODEL_TYPES
-    OLD_DATAMODEL_TRIGGERS = DATAMODEL_TRIGGERS
     DATAMODEL_TYPES = []
-    DATAMODEL_TRIGGERS = []
 
     module_list = []
     datamodel_list = []
-    p = os.getcwd()
+
     for _, name, ispkg in pkgutil.iter_modules(['datamodel']):
         if ispkg:
             try:
@@ -47,12 +41,7 @@ def load_all_sets(reload_modules=False):
         for name, cls in inspect.getmembers(module, inspect.isclass):
             if hasattr(cls, "__rtypes_metadata__"):
                 DATAMODEL_TYPES.append(cls)
-        for name, obj in inspect.getmembers(module):
-            if isinstance(obj, TriggerProcedure):
-                DATAMODEL_TRIGGERS.append(obj)
     DATAMODEL_TYPES = list(set(DATAMODEL_TYPES).difference(OLD_DATAMODEL_TYPES))
-    DATAMODEL_TRIGGERS = list(
-        set(DATAMODEL_TRIGGERS).difference(OLD_DATAMODEL_TRIGGERS))
 
 if not DATAMODEL_TYPES:
     load_all_sets()

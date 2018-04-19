@@ -19,6 +19,9 @@ def generate_crawler_frame(app_id):
     open("applications/search/check_frontier.py", "w").write(
         open("applications/search/check_frontier_template.txt").read().format(
             app_id, filename))
+    open("applications/search/delete_invalids_from_frontier.py", "w").write(
+        open("applications/search/delete_invalids_from_frontier_template.txt").read().format(
+            app_id, filename))
     return useragentstring, filename, typenames
 
 def generate_datamodel(app_id):
