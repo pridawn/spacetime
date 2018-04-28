@@ -46,6 +46,7 @@ CRAWLER_SAVE_FILE = "spacetime_crawler_data"
 
 class dataframe_stores(object):
     INVALIDS = "invalids"
+    SAVE_STATE = "save_state"
     @property
     def is_alive(self):
         return self.master_dataframe.isAlive()
@@ -75,6 +76,7 @@ class dataframe_stores(object):
                 if not self.objectless_server else
                 dataframe_ol()))
         self.master_dataframe.start()
+        #self.master_dataframe.pull()
 
     def add_new_dataframe(self, name, df):
         self.__pause()
@@ -153,17 +155,18 @@ class dataframe_stores(object):
         else:
             # Just required for the server to not disconnect apps not registered
             self.app_to_df[app] = None
-            try:
-                state_manager = self.master_dataframe.dataframe.state_manager
-                undownloaded = (
-                    len(state_manager.type_to_objids[
-                        "datamodel.search.{0}_datamodel."
-                        "{0}UnprocessedLink".format(app)]))
-                total = (len(state_manager.type_to_objids[
-                        "datamodel.search.{0}_datamodel.{0}Link".format(app)]))
-                self.app_to_stats[app] = (total - undownloaded, undownloaded)
-            except KeyError:
-                self.app_to_stats[app] = (0, 0)
+            
+            #try:
+            #    state_manager = self.master_dataframe.dataframe.state_manager
+            #    undownloaded = (
+            #        len(state_manager.type_to_objids[
+            #            "datamodel.search.{0}_datamodel."
+            #            "{0}UnprocessedLink".format(app)]))
+            #    total = (len(state_manager.type_to_objids[
+            #            "datamodel.search.{0}_datamodel.{0}Link".format(app)]))
+            #    self.app_to_stats[app] = (total - undownloaded, undownloaded)
+            #except KeyError:
+            #    self.app_to_stats[app] = (0, 0)
         # Adding to name2class
         for tp in all_types:
             self.name2class.setdefault(tp.__rtypes_metadata__.name, tp)
@@ -173,6 +176,13 @@ class dataframe_stores(object):
 
         # Setting interaction mode.
         self.app_wait_for_server[app] = wait_for_server
+        #if "CrawlerFrame_" in app:
+        #    cid = app[len("CrawlerFrame_"):]
+        #app_path = os.path.join(dataframe_stores.SAVE_STATE, cid)
+        #if not os.path.exists(dataframe_stores.SAVE_STATE):
+        #    os.makedirs(dataframe_stores.SAVE_STATE)
+        #save_state = dict() if not os.path.exists(app_path) else cbor.load(open(app_path, "rb"))
+        
 
     def disconnect(self, app):
         self.__pause()
@@ -183,7 +193,7 @@ class dataframe_stores(object):
         self.__pause()
         pass
 
-    def mark_as_downloaded(self, link_key, obj_changes):
+    def mark_as_downloaded(self, app, link_key, obj_changes):
         link_as_file = self.make_link_into_file(link_key)
         if not os.path.exists(link_as_file):
             # add the data to the file
@@ -205,6 +215,14 @@ class dataframe_stores(object):
             new_data["error_reason"] = {
                 "type": Record.STRING, "value": ""}
         obj_changes["dims"] = new_data
+        #app_path = os.path.join(dataframe_stores.SAVE_STATE, app)
+        #if not os.path.exists(dataframe_stores.SAVE_STATE):
+        #    os.makedirs(dataframe_stores.SAVE_STATE)
+        #save_state = dict() if not os.path.exists(app_path) else cbor.load(open(app_path, "rb"))
+        #save_state[link_key] = True
+        #cbor.dump(save_state, open(app_path, "wb"))
+        
+     
 
     def check_uploaded(self, app, link_key):
         url = "http://" + link_key
@@ -214,6 +232,13 @@ class dataframe_stores(object):
             invalid_f = os.path.join(dataframe_stores.INVALIDS, app)
             open(invalid_f, "a").write(
                 "{0} :: {1}\n".format(time.time(), url))
+        #app_path = os.path.join(dataframe_stores.SAVE_STATE, app)
+        #if not os.path.exists(dataframe_stores.SAVE_STATE):
+        #    os.makedirs(dataframe_stores.SAVE_STATE)
+        #save_state = dict() if not os.path.exists(app_path) else cbor.load(open(app_path, "rb"))
+        #if link_key not in save_state:
+        #    save_state[link_key] = False
+        #cbor.dump(save_state, open(app_path, "wb"))
 
     # spacetime automatically pushing changes into server
     def update(self, app, changes, callback=None):
@@ -223,29 +248,30 @@ class dataframe_stores(object):
             dfc = dfc_type()
             dfc.ParseFromString(changes)
             # print "DFC :::: ", dfc
-            downloaded, undownloaded = self.app_to_stats[app]
+            #downloaded, undownloaded = self.app_to_stats[app]
             if app.startswith("CrawlerFrame_"):
                 crawler_user = app[len("CrawlerFrame_"):]
                 group_tpname = "datamodel.search.{0}_datamodel.{0}Link".format(
                     crawler_user)
-                if group_tpname in dfc["gc"]:
+                if group_tpname in dfc.setdefault("gc", dict()):
                     for link_key, obj_changes in (
-                            dfc['gc'][group_tpname].iteritems()):
+                            dfc["gc"][group_tpname].iteritems()):
                         if ("download_complete" in obj_changes["dims"] 
                                 and obj_changes["dims"][
                                     "download_complete"]["value"]):
-                            self.mark_as_downloaded(link_key, obj_changes)
-                            downloaded += 1
-                            undownloaded -= 1
+                            self.mark_as_downloaded(crawler_user, link_key, obj_changes)
+                            #downloaded += 1
+                            #undownloaded -= 1
                         else:
                             self.check_uploaded(crawler_user, link_key)
-                            undownloaded += 1
+                            #undownloaded += 1
 
-                    self.app_to_stats[app] = (downloaded, undownloaded)
+                    #self.app_to_stats[app] = (downloaded, undownloaded)
             if app in self.app_to_df:
                 self.master_dataframe.apply_changes(
                     dfc, except_app=app,
                     wait_for_server=self.app_wait_for_server[app])
+                #self.master_dataframe.push()
             # before this
             if callback:
                 callback(app)
@@ -271,7 +297,7 @@ class dataframe_stores(object):
                     group_tpname = (
                         "datamodel.search.{0}_datamodel.{0}Link".format(
                             crawler_name))
-                    if group_tpname in final_updates["gc"]:
+                    if group_tpname in final_updates.setdefault("gc", dict()):
                         for link_key, link_changes in (
                                 final_updates['gc'][group_tpname].iteritems()):
                             if "dims" in link_changes:
@@ -284,7 +310,18 @@ class dataframe_stores(object):
                                     # than downloading it
                                     data = cbor.load(open(link_as_file, "rb"))
                                     link_changes["dims"].update(data)
-                    final_updates["stats"] = self.app_to_stats[app]
+                    try:
+                        state_manager = self.master_dataframe.dataframe.state_manager
+                        app_id = app[len("CrawlerFrame_"):]
+                        undownloaded = (
+                            len(state_manager.type_to_objids[
+                                "datamodel.search.{0}_datamodel."
+                                "{0}UnprocessedLink".format(app_id)]))
+                        total = (len(state_manager.type_to_objids[
+                                "datamodel.search.{0}_datamodel.{0}Link".format(app_id)]))
+                    except KeyError:
+                        undownloaded, total = 0, 0
+                    final_updates["stats"] = (total - undownloaded, undownloaded)
             else:
                 if app in self.app_to_df:
                     final_updates = dfc_type(self.app_to_df[app].get_record())

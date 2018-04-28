@@ -49,9 +49,10 @@ def get_exception_handler(timers, store, logger):
 
 def get_request_handlers(process, store, handle_exceptions, thread_pool):
     class GetAllUpdatedTracked(BaseAllUpdatedTracked):
-        @asynchronous
+#        @asynchronous
         @handle_exceptions
         def get(self, sim):
+            process.logger.debug("Received get request from %s", sim)
             changelist_str = (
                 self.request.body if (
                     self.request.body and store.objectless_server) else None)
@@ -59,37 +60,44 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 cbor.loads(changelist_str)
                 if changelist_str is not None else
                 dict())
-            thread_pool.apply_async(
-                store.getupdates,
-                args=(sim, changelist, self.complete_update))
+            data, content_type = store.getupdates(sim, changelist)
+#            thread_pool.apply_async(
+#                store.getupdates,
+#                args=(sim, changelist, self.complete_update))
 
-        @handle_exceptions
-        def complete_update(self, sim, data, content_type):
-            io_loop = tornado.ioloop.IOLoop.current()
-            io_loop.add_callback(self._complete_update, sim, data, content_type)
-
-        @handle_exceptions
-        def _complete_update(self, sim, data, content_type):
+#        @handle_exceptions
+#        def complete_update(self, sim, data, content_type):
+            process.logger.debug("Completing get request from %s", sim)
+#            io_loop = tornado.ioloop.IOLoop.current()
+#            io_loop.add_callback(self._complete_update, sim, data, content_type)
+#
+#        @handle_exceptions
+#        def _complete_update(self, sim, data, content_type):
             self.set_header("content-type", content_type)
             self.write(data)
-            self.finish()
+#            self.finish()
+            process.logger.debug("Completed get request from %s", sim)
 
     class PostAllUpdatedTracked(BaseAllUpdatedTracked):
-        @asynchronous
+#        @asynchronous
         @handle_exceptions
         def post(self, sim):
+            process.logger.debug("Received post request from %s", sim)
             data = self.request.body
-            thread_pool.apply_async(
-                store.update, args=(sim, data, self.complete_push))
+            store.update(sim, data)
+#            thread_pool.apply_async(
+#                store.update, args=(sim, data, self.complete_push))
 
-        @handle_exceptions
-        def complete_push(self, sim):
-            io_loop = tornado.ioloop.IOLoop.current()
-            io_loop.add_callback(self._complete_push, sim)
-
-        @handle_exceptions
-        def _complete_push(self, sim):
-            self.finish()
+#        @handle_exceptions
+#        def complete_push(self, sim):
+            process.logger.debug("Completing post request from %s", sim)
+#            io_loop = tornado.ioloop.IOLoop.current()
+#            io_loop.add_callback(self._complete_push, sim)
+#
+#        @handle_exceptions
+#        def _complete_push(self, sim):
+#            self.finish()
+            process.logger.debug("Completed post request from %s", sim)
 
     class GetStoreStatus(RequestHandler):
         def get(self, status_name):
@@ -100,6 +108,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
     class Register(BaseRegisterHandler):
         @handle_exceptions
         def put(self, sim):
+            process.logger.info("Received register request from %s", sim)
             data = self.request.body
             json_dict = json.loads(data)
             typemap = json_dict["sim_typemap"]
@@ -119,6 +128,7 @@ def get_request_handlers(process, store, handle_exceptions, thread_pool):
                 if os.path.exists(inv_f):
                     open(inv_f, "a").write(
                         "############# RESTART DETECTED AT {0} ###########\n".format(time.time()))
+            process.logger.debug("Completed register request from %s", sim)
 
 
         @handle_exceptions
@@ -170,6 +180,112 @@ def SetupLoggers(debug) :
     logging.getLogger("tornado.access").setLevel(logging.WARNING)
     return logger
 
+class TornadoServer(object):
+
+    def __init__(self, process=None):
+        self.done = False
+        self.logger = None
+        self.store = None
+        self.timers = None
+        self.app = None
+        self.port = None
+        self.timeout = 0
+        self.disconnect_timer = None
+        self.thread_pool = None
+        self.process = process
+        self.not_ready = False
+
+   
+    def setup(self, debug, store, timeout=0):
+        self.logger = SetupLoggers(debug)
+        self.logger.info("Log level is " + str(self.logger.level))
+        self.store = store
+        self.timers = dict()
+        self.timeout = timeout
+        self.thread_pool = ThreadPool()
+        self.thread_pool.daemon = True
+        handle_exceptions = get_exception_handler(
+            self.timers, self.store, self.logger)
+        (get_all_updated_tracked, post_all_updated_tracked,
+         register, get_store_status, get_invalids) = (
+             get_request_handlers(
+                 self, self.store, handle_exceptions, self.thread_pool))
+        self.app = tornado.web.Application([
+            (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
+            (r"/([a-zA-Z0-9_-]+)/invalid", get_invalids),
+            (r"/([a-zA-Z0-9_-]+)", register),
+            (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
+        self.logger.info("Server setup complete.")
+        self.not_ready = True
+
+    def start_server(self, port, console):
+        if not self.not_ready:
+            raise RuntimeError(
+                "Trying to start tornado server without setting it up first.")
+        self.port = port
+        self.store.start()
+
+        if console:
+            console = SpacetimeConsole(self.store, self)
+            con_thread = Thread(
+                target=console.cmdloop,
+                name="Thread_spacetime_console")
+            con_thread.daemon = True
+            con_thread.start()
+
+        if self.timeout > 0:
+            self.start_timer()
+
+        self.app.listen(self.port)
+        self.logger.info("Server started")
+        tornado.ioloop.IOLoop.current().start()
+        self.logger.info("Server up and running")
+        if self.process:
+            self.process.start_event.set()
+
+    def restart_store(self, instrument_filename=None):
+        if self.not_ready:
+            raise RuntimeError(
+                "Trying to restart tornado server without setting it up first.")
+        if instrument_filename:
+            self.store.save_instrumentation_data(instrument_filename)
+        self.store.clear()
+        if self.process:
+            self.reset_event.set()
+
+    def shutdown(self):
+        self.store.shutdown()
+        tornado.ioloop.IOLoop.instance().stop()
+        self.done = True
+
+    def start_timer(self):
+        self.disconnect_timer = Timer(self.timeout, self.check_disconnect, ())
+        self.disconnect_timer.start()
+
+    def check_disconnect(self):
+        if not self.store.pause_servers:
+            for sim in self.timers:
+                if (time.time() - self.timers[sim]) > self.timeout:
+                    self.disconnect(sim)
+        self.start_timer()
+
+    def disconnect(self, sim):
+        self.store.gc(sim)
+        del self.timers[sim]
+
+    def wait_for_start(self):
+        return
+
+    def wait_for_reset(self):
+        return
+
+    def get_server_queue_size(self):
+        return self.store.master_dataframe.queue.qsize()
+
+    def join(self):
+        self.app_thread.join()
+
 
 class TornadoServerProcess(Process):
     '''Class that helps launch and maintain Tornado Server.'''
@@ -187,22 +303,10 @@ class TornadoServerProcess(Process):
             name="BENCHMARK_TornadoServerProcess")
         self.daemon = True
         self.work_queue = Queue()
-        self.done = False
-        self.logger = None
-        self.store = None
-        self.timers = None
-        self.app = None
-        self.port = None
-        self.timeout = 0
-        self.disconnect_timer = None
-        self.app_thread = Thread(
-            target=tornado.ioloop.IOLoop.current().start,
-            name="Thread_TornadoServer")
-        self.app_thread.daemon = True
         self.start_event = Event()
         self.reset_event = Event()
         self.get_size_queue = Queue()
-        self.thread_pool = None
+        self.server = TornadoServer(self)
 
     #################################################
     # APIs not in the same process as run
@@ -251,78 +355,18 @@ class TornadoServerProcess(Process):
                 elif isinstance(req, ShutdownRequest):
                     self.process_shutdown()
                 elif isinstance(req, GetQueueSizeRequest):
-                    self.get_size_queue.put(self.store.master_dataframe.queue.qsize())
+                    self.get_size_queue.put(self.server.get_size_queue())
             except KeyboardInterrupt:
                 self.process_shutdown()
 
     def process_setup(self, req):
-        self.logger = SetupLoggers(req.debug)
-        self.logger.info("Log level is " + str(self.logger.level))
-        self.store = req.store
-        self.timers = dict()
-        self.timeout = req.timeout
-        self.thread_pool = ThreadPool()
-        self.thread_pool.daemon = True
-        handle_exceptions = get_exception_handler(
-            self.timers, self.store, self.logger)
-        (get_all_updated_tracked, post_all_updated_tracked,
-         register, get_store_status, get_invalids) = (
-             get_request_handlers(
-                 self, self.store, handle_exceptions, self.thread_pool))
-        self.app = tornado.web.Application([
-            (r"/([a-zA-Z0-9_-]+)/getupdated", get_all_updated_tracked),
-            (r"/([a-zA-Z0-9_-]+)/postupdated", post_all_updated_tracked),
-            (r"/([a-zA-Z0-9_-]+)/invalid", get_invalids),
-            (r"/([a-zA-Z0-9_-]+)", register),
-            (r"/status/([a-zA-Z0-9_-]+)", get_store_status)])
+        self.server.process_setup(req.debug, req.store, req.timeout)
 
     def process_start(self, req):
-        if self.not_ready:
-            raise RuntimeError(
-                "Trying to start tornado server without setting it up first.")
-        self.port = req.port
-        self.store.start()
-
-        if req.console:
-            console = SpacetimeConsole(self.store, self, stdin=req.stdin)
-            con_thread = Thread(
-                target=console.cmdloop,
-                name="Thread_spacetime_console")
-            con_thread.daemon = True
-            con_thread.start()
-
-        if self.timeout > 0:
-            self.start_timer()
-
-        self.app.listen(self.port)
-        self.app_thread.start()
-        self.start_event.set()
+        self.server.start(req.port, req.console)
 
     def process_restart_store(self, req):
-        if self.not_ready:
-            raise RuntimeError(
-                "Trying to restart tornado server without setting it up first.")
-        if req.instrument_filename:
-            self.store.save_instrumentation_data(req.instrument_filename)
-        self.store.clear()
-        self.reset_event.set()
+        self.server.restart_store(req.instrument_filename)
 
     def process_shutdown(self):
-        self.store.shutdown()
-        tornado.ioloop.IOLoop.instance().stop()
-        self.done = True
-
-    def start_timer(self):
-        self.disconnect_timer = Timer(self.timeout, self.check_disconnect, ())
-        self.disconnect_timer.start()
-
-    def check_disconnect(self):
-        if not self.store.pause_servers:
-            for sim in self.timers:
-                if (time.time() - self.timers[sim]) > self.timeout:
-                    self.disconnect(sim)
-        self.start_timer()
-
-    def disconnect(self, sim):
-        self.store.gc(sim)
-        del self.timers[sim]
+        self.server.shutdown()

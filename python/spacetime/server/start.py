@@ -1,7 +1,7 @@
-from spacetime.server.server_process import TornadoServerProcess
+from spacetime.server.server_process import TornadoServerProcess, TornadoServer
 
 class SpacetimeLauncher(object):
-    def __init__(self, store, args=None, config=None):
+    def __init__(self, store, args=None, config=None, in_process=True):
         self.port = 12000
         self.profile = False
         self.debug = False
@@ -14,9 +14,8 @@ class SpacetimeLauncher(object):
         if args:
             self.load_config_from_args(args)
         self.store = store
-        self.server = TornadoServerProcess()
+        self.server = TornadoServerProcess() if not in_process else TornadoServer()
         self.server.setup(self.debug, self.store, self.timeout)
-
 
     def load_config_from_args(self, args):
         self.port = args.port
@@ -38,7 +37,8 @@ class SpacetimeLauncher(object):
             "objectless", self.objectless_dataframe)
 
     def start(self, console=False):
-        self.server.start()
+        if isinstance(self.server, TornadoServerProcess):
+            self.server.start()
         self.server.start_server(self.port, console)
 
     def shutdown(self):
@@ -59,10 +59,10 @@ class SpacetimeLauncher(object):
     def get_queue_size(self):
         return self.server.get_server_queue_size()
 
-def start_server(store, args=None, config=None, console=False):
+def start_server(store, args=None, config=None, console=False, in_process=True):
     if not args and not config:
         raise RuntimeError("One of args or configfile has to be set")
     spacetime_launcher = SpacetimeLauncher(
-        store, args, config)
+        store, args, config, in_process)
     spacetime_launcher.start(console)
     return spacetime_launcher

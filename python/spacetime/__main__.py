@@ -6,6 +6,9 @@ Created on Apr 19, 2016
 '''
 import argparse
 import json
+import time
+import logging
+import sys
 from subprocess import Popen
 from datamodel.all import DATAMODEL_TYPES
 from spacetime.server.start import start_server
@@ -43,8 +46,17 @@ if __name__ == "__main__":
         '-ltp', '--load_types', nargs="+", default=list(),
         help='loads the types from the datamodel.all.DATAMODEL_TYPES '
              'that has to be loaded.')
+    PARSER.add_argument(
+        '-v', '--version', action='store_true', default=False,
+        help='Returns the version of spacetime and rtypes used.')
+
 
     ARGS = PARSER.parse_args()
+    if ARGS.version:
+        import spacetime
+        print "Spacetime Version is ", spacetime.version
+        print "Rtypes Version is ", rtypes.version
+        sys.exit(0)
     CONFIG = json.load(open(ARGS.config_file)) if ARGS.config_file else dict()
     LOAD_TYPES = (
         CONFIG["load_types"] if "load_types" in CONFIG else ARGS.load_types)
@@ -57,9 +69,10 @@ if __name__ == "__main__":
     STORE = dataframe_stores(NAME2CLASS, dict(), not ARGS.object)
     try:
         SERVER = start_server(
-            STORE, args=ARGS, config=CONFIG, console=False)
-        SERVER.join()
+            STORE, args=ARGS, config=CONFIG, console=True, in_process=True)
+        logging.info("Server up.")
+
     except KeyboardInterrupt:
-        SERVER.shutdown()
+        logging.info("Server shutdown.")
     finally:
         Popen("stty sane", shell=True)

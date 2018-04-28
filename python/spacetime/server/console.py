@@ -33,7 +33,7 @@ class SpacetimeConsole(cmd.Cmd):
         given set.
         """
         tokens = shlex.split(line)
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if len(tokens) == 3:
             type_text = tokens[0]
             dim = tokens[1]
@@ -65,7 +65,7 @@ class SpacetimeConsole(cmd.Cmd):
         Has auto-complete.
         """
         tokens = shlex.split(line)
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         object_map = self.store.master_dataframe.object_manager.object_map
         if len(tokens) ==  2:
             type_text = tokens[0]
@@ -85,7 +85,7 @@ class SpacetimeConsole(cmd.Cmd):
 
     def complete_descobj(self, text, line, begidx, endidx):
         tokens = shlex.split(line)
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         object_map = self.store.master_dataframe.object_manager.object_map
         if len(tokens) == 1:
             completions = name2class.keys()
@@ -108,7 +108,7 @@ class SpacetimeConsole(cmd.Cmd):
         """ objsin <type>
         Prints the primary key of all objects of a type (accepts auto-complete)
         """
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if type_text in name2class:
             objs = self.store.get(name2class[type_text])
             if objs:
@@ -121,7 +121,7 @@ class SpacetimeConsole(cmd.Cmd):
             print "could not find type %s" % type_text
 
     def complete_objsin(self, text, line, begidx, endidx):
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if not text:
             completions = name2class.keys()
         else:
@@ -132,7 +132,7 @@ class SpacetimeConsole(cmd.Cmd):
         """ objsin <type>
         Prints the primary key of all objects of a type (accepts auto-complete)
         """
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if type_text in name2class:
             objs = self.store.get(name2class[type_text])
             if objs:
@@ -143,7 +143,7 @@ class SpacetimeConsole(cmd.Cmd):
             print "could not find type %s" % type_text
 
     def complete_countobjsin(self, text, line, begidx, endidx):
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if not text:
             completions = name2class.keys()
         else:
@@ -151,7 +151,7 @@ class SpacetimeConsole(cmd.Cmd):
         return completions
 
     def complete_list(self, text, line, begidx, endidx):
-        return ['sets', 'apps']
+        return ['apps']
 
     def do_list(self, line):
         """ list ['sets','apps']
@@ -159,11 +159,11 @@ class SpacetimeConsole(cmd.Cmd):
         * 'sets' prints all pcc sets tracked by the server
         * 'apps' prints the name of all applications registered with the server
         """
-        name2class = self.store.master_dataframe.type_manager.name2class
-        if line == "sets":
-            for t in name2class.keys():
-                print t
-        elif line == "apps":
+        #name2class = self.store.master_dataframe.dataframe.type_manager.name2class
+        #if line == "sets":
+        #    for t in name2class.keys():
+        #        print t
+        if line == "apps":
             all_apps = self.store.get_app_list()
             for app in all_apps:
                 print app
@@ -176,7 +176,7 @@ class SpacetimeConsole(cmd.Cmd):
 
         If '!all' is passed, all objects of all types are cleared.
         """
-        name2class = self.store.master_dataframe.type_manager.name2class
+        name2class = self.store.master_dataframe.dataframe.type_manager.name2class
         if type_text:
             if type_text == "!all":
                 self.store.clear()

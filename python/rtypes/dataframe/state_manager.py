@@ -382,7 +382,7 @@ class StateManager(object):
                             "but has last known version? What gives?")
                     # No dims no object, ignore and continue
                     continue
-                print "CHECKOUT", obj_changes["types"]
+                # print "CHECKOUT", obj_changes["types"]
                 if (groupname in obj_changes["types"]
                         and obj_changes["types"][groupname] == Event.Delete):
                     # Delete all records of the object. Not required any more.
