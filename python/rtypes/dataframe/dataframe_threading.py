@@ -36,14 +36,18 @@ class dataframe_wrapper(Thread):
 
     def run(self):
         while not self.stop:
-            req = self.queue.get()
-            if (isinstance(req, GetDFRequest)
-                    or isinstance(req, GetRecordDFRequest)):
-                self.process_get_req(req, self.get_token_dict)
-            else:
-                self.process_put_req(req, self.get_token_dict)
+            try:
+                req = self.queue.get()
+                if (isinstance(req, GetDFRequest)
+                        or isinstance(req, GetRecordDFRequest)):
+                    self.process_get_req(req, self.get_token_dict)
+                else:
+                    self.process_put_req(req, self.get_token_dict)
+            except Exception:
+                continue
         self.queue.cancel_join_thread()
         self.queue.close()
+            
 
     def shutdown(self):
         self.queue.put(ShutdownDFRequest())
