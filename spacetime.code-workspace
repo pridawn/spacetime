@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "python"
+		}
+	],
+	"settings": {
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": true,
+		"python.linting.pylintArgs": [
+			"--rcfile",
+			"python/.pylintrc"
+		],
+		"search.useIgnoreFilesByDefault": true,
+		"files.autoSave": "afterDelay",
+		"files.autoSaveDelay": 1000,
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/*.pyc": true
+		},
+		"editor.rulers": [80],
+		"editor.renderWhitespace": "all",
+	}
+}

@@ -8,24 +8,16 @@ from spacetime.common.modes import Modes
 
 class DataAgent(object):
     def __init__(self, keywords):
-        if 'host' in keywords:
-            self.host = (keywords['host'] + ("/" if keywords['host'][-1] != "/" else ""))
+        if "host" in keywords:
+            self.host = keywords.rstrip("/") + "/"
         else:
             self.host = "default"
-        if 'wire_format' in keywords:
-            self.__special_wire_format__ = keywords['wire_format']
-        else:
-            self.__special_wire_format__ = "default"
 
     def __call__(self, actual_class):
-        if actual_class.__special_wire_format__ == None:
-            actual_class.__special_wire_format__ = {}
-            
-        if self.__special_wire_format__ != "default":
-            actual_class.__special_wire_format__[self.host] = self.__special_wire_format__
+        if actual_class.__special_wire_format__ is None:
+            actual_class.__special_wire_format__ = dict()
         return actual_class
 
-        
 
 class Producer(DataAgent):
     def __init__(self, *types, **keywords):
@@ -34,9 +26,10 @@ class Producer(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Producing] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Producing] = self.types
         return DataAgent.__call__(self, actual_class)
 
 class Tracker(DataAgent):
@@ -46,9 +39,10 @@ class Tracker(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Tracker] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Tracker] = self.types
         return DataAgent.__call__(self, actual_class)
 
 class Getter(DataAgent):
@@ -58,9 +52,10 @@ class Getter(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Getter] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Getter] = self.types
         return DataAgent.__call__(self, actual_class)
 
 class GetterSetter(DataAgent):
@@ -70,9 +65,10 @@ class GetterSetter(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.GetterSetter] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.GetterSetter] = self.types
         return DataAgent.__call__(self, actual_class)
 
 class Deleter(DataAgent):
@@ -82,9 +78,10 @@ class Deleter(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Deleter] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Deleter] = self.types
         return DataAgent.__call__(self, actual_class)
 
 class Setter(DataAgent):
@@ -94,7 +91,21 @@ class Setter(DataAgent):
 
     def __call__(self, actual_class):
         if self.types:
-            if actual_class.__declaration_map__ == None:
-                actual_class.__declaration_map__ = {}
-            actual_class.__declaration_map__.setdefault(self.host, {})[Modes.Setter] = self.types
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Setter] = self.types
+        return DataAgent.__call__(self, actual_class)
+
+class ServerTriggers(DataAgent):
+    def __init__(self, *functions, **keywords):
+        self.functions = functions
+        DataAgent.__init__(self, keywords)
+
+    def __call__(self, actual_class):
+        if self.functions:
+            if actual_class.__declaration_map__ is None:
+                actual_class.__declaration_map__ = dict()
+            actual_class.__declaration_map__.setdefault(
+                self.host, dict())[Modes.Triggers] = self.functions
         return DataAgent.__call__(self, actual_class)

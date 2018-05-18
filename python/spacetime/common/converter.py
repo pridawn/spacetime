@@ -4,7 +4,7 @@ Created on Apr 19, 2016
 @author: Rohan Achar
 '''
 
-from pcc.recursive_dictionary import RecursiveDictionary
+from rtypes.pcc.utils.recursive_dictionary import RecursiveDictionary
 
 import uuid
 
