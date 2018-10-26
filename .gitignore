@@ -26,3 +26,5 @@ python/test.py
 .vscode
 *.code-workspace
 .RtypesStateManagerState
+python/invalids/
+python/spacetime_crawler_data/

@@ -365,32 +365,39 @@ class StateManager(object):
             group_changelist = self.type_to_obj_dimstate[groupname]
 
             for oid, obj_changes in group_changes.iteritems():
+                #print oid
                 prev_version, curr_version = obj_changes["version"]
-                if not group_changelist.has_obj(oid):
-                    if "dims" in obj_changes and prev_version is None:
-                        # Should be a new object.
-                        if oid not in self.type_to_objids[groupname]:
-                            #print "Adding new object"
-                            group_changelist.add_obj(
-                                oid, curr_version, {"dims": obj_changes["dims"]},
-                                except_app)
-                            objects_to_check_pcc.setdefault(
-                                groupname, set()).add(oid)
-                            self.type_to_objids[groupname].add(oid)
-                        else:
-                            continue
-                    elif "dims" in obj_changes:
-                        raise RuntimeError(
-                            "Something went wrong. Obj not in record, "
-                            "but has last known version? What gives?")
+                if "dims" in obj_changes and prev_version is None:
+                    # Should be a new object.
+                    if oid not in self.type_to_objids[groupname] and not group_changelist.has_obj(oid):
+                        group_changelist.add_obj(
+                            oid, curr_version, {"dims": obj_changes["dims"]},
+                            except_app)
+                        objects_to_check_pcc.setdefault(
+                            groupname, set()).add(oid)
+                        self.type_to_objids[groupname].add(oid)
+                    else:
+                        continue
+                elif not group_changelist.has_obj(oid):
+                    #print "RTError"
+                    continue
+                    raise RuntimeError(
+                        "Something went wrong. Obj not in record, "
+                        "but has last known version? What gives?")
                     # No dims no object, ignore and continue
                     continue
-                # print "CHECKOUT", obj_changes["types"]
+                #else:
+                    
+                    # Object is unknown, discard entry
+                #    print "Unknown obj", groupname, oid, obj_changes["types"]
+                #    continue
+                #print "CHECKOUT", obj_changes["types"]
                 if (groupname in obj_changes["types"]
                         and obj_changes["types"][groupname] == Event.Delete):
                     # Delete all records of the object. Not required any more.
                     group_changelist.delete_obj(oid)
                     deleted_objs.setdefault(groupname, set()).add(oid)
+                    #print "deleting"
                     continue
                 # Not a delete or a new object. (modification)
                 objects_to_check_pcc.setdefault(
@@ -420,6 +427,7 @@ class StateManager(object):
                         oid, next_timestamp, {"dims": obj_changes["dims"]},
                         except_app)
 
+        #print "otcp", objects_to_check_pcc
         # start pcc calculations now.
         for groupname, oids in deleted_objs.iteritems():
             try:
@@ -433,6 +441,7 @@ class StateManager(object):
                     self.type_to_objids[groupname].difference_update(oids)
 
         for groupname, oids in objects_to_check_pcc.iteritems():
+            #print "Checking pccs for", groupname, oids
             try:
                 group_type = tm.get_requested_type_from_str(groupname)
             except TypeError:
@@ -447,6 +456,8 @@ class StateManager(object):
                             self.type_to_objids[pcc_type.name].add(oid)
                         elif oid in self.type_to_objids[pcc_type.name]:
                             self.type_to_objids[pcc_type.name].remove(oid)
+
+        #print "At the end:", self.type_to_objids
 
 
     def __calculate_transform(self, inplace_changes, new_changes):

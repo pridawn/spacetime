@@ -313,6 +313,9 @@ class dataframe_stores(object):
                     try:
                         state_manager = self.master_dataframe.dataframe.state_manager
                         app_id = app[len("CrawlerFrame_"):]
+                        #print state_manager.type_to_objids[
+                        #        "datamodel.search.{0}_datamodel."
+                        #        "{0}UnprocessedLink".format(app_id)]
                         undownloaded = (
                             len(state_manager.type_to_objids[
                                 "datamodel.search.{0}_datamodel."
