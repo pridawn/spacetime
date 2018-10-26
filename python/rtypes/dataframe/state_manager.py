@@ -370,12 +370,15 @@ class StateManager(object):
                     if "dims" in obj_changes and prev_version is None:
                         # Should be a new object.
                         if oid not in self.type_to_objids[groupname]:
+                            #print "Adding new object"
                             group_changelist.add_obj(
                                 oid, curr_version, {"dims": obj_changes["dims"]},
                                 except_app)
                             objects_to_check_pcc.setdefault(
                                 groupname, set()).add(oid)
                             self.type_to_objids[groupname].add(oid)
+                        else:
+                            continue
                     elif "dims" in obj_changes:
                         raise RuntimeError(
                             "Something went wrong. Obj not in record, "

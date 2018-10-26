@@ -33,6 +33,7 @@ class dataframe_wrapper(Thread):
         self.get_token_dict = dict()
         self.daemon = True
         self.stop = False
+        self.app_not_completed = dict()
 
     def run(self):
         while not self.stop:
@@ -209,16 +210,23 @@ class dataframe_wrapper(Thread):
                 del self.get_token_dict[req.token]
 
     def get_record(self, changelist=None, app=None):
-        req = GetRecordDFRequest()
-        req.changelist = changelist
-        req.token = uuid4()
-        req.app = app
-        self.get_token_dict[req.token] = {"is_set": Event()}
-        self.queue.put(req)
         result = dict()
+        if app in self.app_not_completed:
+            req = self.app_not_completed[app]
+        else:
+            req = GetRecordDFRequest()
+            req.changelist = changelist
+            req.token = uuid4()
+            req.app = app
+            self.get_token_dict[req.token] = {"is_set": Event()}
+            self.queue.put(req)
         if self.get_token_dict[req.token]["is_set"].wait(timeout=5):
             result = self.get_token_dict[req.token]["result"]
             del self.get_token_dict[req.token]
+            if app in self.app_not_completed:
+                del self.app_not_completed[app]
+        else:
+            self.app_not_completed[app] = req
         return result
 
     def clear_record(self):
