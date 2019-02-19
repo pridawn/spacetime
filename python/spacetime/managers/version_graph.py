@@ -1,4 +1,6 @@
-from multiprocessing import RLock
+from multiprocessing import Process, RLock
+from threading import Thread
+from queue import Queue, Empty
 
 
 class Node(object):
@@ -105,7 +107,6 @@ class Graph(object):
             self.nodes[start].all_next.remove(end)
             self.nodes[end].all_prev.remove(start)
 
-
     def merge_node(self, node, merger_function):
         del self.nodes[node.current]
         old_change = self.edges[(node.prev_master, node.current)].payload
@@ -121,7 +122,8 @@ class Graph(object):
                 node.prev_master, node.next_master, new_payload)
         else:
             # Figure out how to avoid this computation.
-            assert self.edges[(node.prev_master, node.next_master)].payload == new_payload, (self.edges[(node.prev_master, node.next_master)].payload, new_payload)
+            assert self.edges[(node.prev_master, node.next_master)].payload == new_payload, (
+                self.edges[(node.prev_master, node.next_master)].payload, new_payload)
         if self.nodes[node.prev_master].next_master == node.current:
             self.nodes[node.prev_master].next_master = node.next_master
         self.nodes[node.prev_master].all_next.add(node.next_master)
@@ -155,3 +157,51 @@ class Graph(object):
         self.maintain_nodes(state_to_ref, merger_function, False)
         # The master line.
         self.maintain_nodes(state_to_ref, merger_function, True)
+
+
+class GraphActor(Thread):
+
+    def __init__(self):
+        self.graph = Graph()
+        super().__init__()
+        self.read_write_queue = Queue(maxsize=0)
+        self.daemon = True
+        self.output = None
+
+    def process_continue_chain(self, from_version, to_version, package):
+        self.graph.continue_chain(from_version, to_version, package)
+
+    def process_maintain(self, state_to_ref, merger_function):
+        self.graph.maintain(state_to_ref, merger_function)
+
+    def process_get_item(self, key):
+        self.output = None
+        self.output = self.graph.__getitem__(key)
+
+    def run(self):
+        while True:
+            try:
+                req = self.read_write_queue.get()
+                if req[0] == 'continue_chain':
+                    from_version, to_version, package = req[1:]
+                    self.process_continue_chain(from_version, to_version, package)
+                elif req[0] == 'maintain':
+                    state_to_ref, merger_function = req[1:]
+                    self.process_maintain(state_to_ref, merger_function)
+                elif req[0] == 'get_item':
+                    key = req[1]
+                    self.process_get_item(key)
+            except Empty:
+                pass
+
+    def continue_chain(self, from_version, to_version, package):
+        self.read_write_queue.put(('continue_chain', from_version, to_version, package))
+
+    def maintain(self, state_to_ref, merger_function):
+        self.read_write_queue.put(('maintain', state_to_ref, merger_function))
+
+    def __getitem__(self, key):
+        self.read_write_queue.put(('get_item', key))
+        while self.output is None:
+            continue
+        return self.output

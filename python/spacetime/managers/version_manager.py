@@ -4,10 +4,12 @@ import os
 from uuid import uuid4
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Process, Queue
-from spacetime.managers.version_graph import Graph
+from spacetime.managers.version_graph import GraphActor
 import spacetime.utils.utils as utils
 from spacetime.utils.enums import Event, VersionBy
 import time
+
+
 
 class VersionManagerProcess(Process):
 
@@ -389,12 +391,15 @@ class FullStateVersionManager(VersionManager):
     def __init__(self, appname, types, dump_graph, instrument_record):
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
-        self.version_graph = Graph()
+        self.version_graph = GraphActor()
         self.state_to_app = dict()
         self.app_to_state = dict()
         self.logger = utils.get_logger("%s_FullStateVersionManager" % appname)
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
+        self.version_graph_head= 'ROOT'
+        self.version_graph.start()
+
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)
@@ -404,36 +409,50 @@ class FullStateVersionManager(VersionManager):
         if start_v == end_v:
             # The versions are the same, lets ignore.
             return True
-        if start_v != self.version_graph.head.current:
+        if start_v!= self.version_graph_head:
+        #if start_v != self.version_graph.head.current:
             self.resolve_conflict(start_v, end_v, package, from_external)
         else:
             self.version_graph.continue_chain(start_v, end_v, package)
+            self.version_graph_head=end_v
         self.maintain(appname, end_v)
         return True
 
     def retrieve_data(self, appname, version):
+
         data, version_change = self.retrieve_data_nomaintain(version)
         self.set_app_marker(appname, version_change[1])
         return data, version_change
 
+    #def retrieve_data_nomaintain(self, version):
+        #merged = dict()
+        #if version not in self.version_graph.nodes:
+            #return merged, [version, version]
+        #for delta in self.version_graph[version:]:
+            #merged = utils.merge_state_delta(merged, delta)
+        #return merged, [version, self.version_graph.head.current]
+
     def retrieve_data_nomaintain(self, version):
         merged = dict()
-        if version not in self.version_graph.nodes:
-            return merged, [version, version]
+        
         for delta in self.version_graph[version:]:
             merged = utils.merge_state_delta(merged, delta)
-        return merged, [version, self.version_graph.head.current]
+        if not merged:
+            return merged, [version, version]
+        return merged, [version, self.version_graph_head]
 
     def data_sent_confirmed(self, app, version):
         if version[0] != version[1]:
             self.maintain(app, version[1])
 
     def resolve_conflict(self, start_v, end_v, package, from_external):
-        new_v = self.version_graph.head.current
+        #new_v = self.version_graph.head.current
+        new_v= self.version_graph_head
         change, _ = self.retrieve_data_nomaintain(start_v)
         t_new_merge, t_conflict_merge = self.operational_transform(
             start_v, change, package, from_external)
         merge_v = str(uuid4())
+        self.version_graph_head=merge_v
         self.version_graph.continue_chain(start_v, end_v, package)
         self.version_graph.continue_chain(new_v, merge_v, t_new_merge)
         self.version_graph.continue_chain(end_v, merge_v, t_conflict_merge)
@@ -457,9 +476,9 @@ class FullStateVersionManager(VersionManager):
         super().maintain(
             self.state_to_app, self.app_to_state,
             self.version_graph, appname, end_v, utils.merge_state_delta)
-        if self.instrument_record:
-            self.instrument_record.put(
-                ("MEMORY", "{0}\t{1}\t{2}\n".format(time.time(), len(self.version_graph.nodes), len(self.version_graph.edges))))
+        #if self.instrument_record:
+            #self.instrument_record.put(
+                #("MEMORY", "{0}\t{1}\t{2}\n".format(time.time(), len(self.version_graph.nodes), len(self.version_graph.edges))))
 
 class TypeVersionManager(VersionManager):
     def __init__(self, appname, types, dump_graph):
