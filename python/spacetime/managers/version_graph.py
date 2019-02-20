@@ -1,6 +1,5 @@
-from multiprocessing import Process, RLock
+from multiprocessing import Process, RLock,Manager
 from threading import Thread
-from queue import Queue, Empty
 
 
 class Node(object):
@@ -159,14 +158,14 @@ class Graph(object):
         self.maintain_nodes(state_to_ref, merger_function, True)
 
 
-class GraphActor(Thread):
+class VersionGraphProcess(Process):
 
     def __init__(self):
         self.graph = Graph()
         super().__init__()
-        self.read_write_queue = Queue(maxsize=0)
+        self.read_write_queue = Manager().Queue()
         self.daemon = True
-        self.output = None
+        self.start()
 
     def process_continue_chain(self, from_version, to_version, package):
         self.graph.continue_chain(from_version, to_version, package)
@@ -174,34 +173,29 @@ class GraphActor(Thread):
     def process_maintain(self, state_to_ref, merger_function):
         self.graph.maintain(state_to_ref, merger_function)
 
-    def process_get_item(self, key):
-        self.output = None
-        self.output = self.graph.__getitem__(key)
+    def process_get_item(self, key,result_queue):
+        result_queue.put(list(self.graph.__getitem__(key)))
 
     def run(self):
         while True:
-            try:
                 req = self.read_write_queue.get()
-                if req[0] == 'continue_chain':
+                if req[0] == "continue_chain":
                     from_version, to_version, package = req[1:]
                     self.process_continue_chain(from_version, to_version, package)
-                elif req[0] == 'maintain':
+                elif req[0] == "maintain":
                     state_to_ref, merger_function = req[1:]
                     self.process_maintain(state_to_ref, merger_function)
-                elif req[0] == 'get_item':
-                    key = req[1]
-                    self.process_get_item(key)
-            except Empty:
-                pass
+                elif req[0] == "get_item":
+                    key, result_queue = req[1],req[2]
+                    self.process_get_item(key, result_queue)
 
     def continue_chain(self, from_version, to_version, package):
-        self.read_write_queue.put(('continue_chain', from_version, to_version, package))
+        self.read_write_queue.put(("continue_chain", from_version, to_version, package))
 
     def maintain(self, state_to_ref, merger_function):
-        self.read_write_queue.put(('maintain', state_to_ref, merger_function))
+        self.read_write_queue.put(("maintain", state_to_ref, merger_function))
 
     def __getitem__(self, key):
-        self.read_write_queue.put(('get_item', key))
-        while self.output is None:
-            continue
-        return self.output
+        result_queue = Manager().Queue()
+        self.read_write_queue.put(("get_item", key,result_queue))
+        return result_queue.get()  

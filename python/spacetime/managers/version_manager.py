@@ -4,7 +4,7 @@ import os
 from uuid import uuid4
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Process, Queue
-from spacetime.managers.version_graph import GraphActor
+from spacetime.managers.version_graph import VersionGraphProcess
 import spacetime.utils.utils as utils
 from spacetime.utils.enums import Event, VersionBy
 import time
@@ -387,19 +387,19 @@ class VersionManager(object):
         count = len(os.listdir(folder))
         open(os.path.join(folder, "heap{}.dot".format(count)), "w").write(gstr)
 
+
 class FullStateVersionManager(VersionManager):
+
     def __init__(self, appname, types, dump_graph, instrument_record):
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
-        self.version_graph = GraphActor()
+        self.version_graph = VersionGraphProcess()
         self.state_to_app = dict()
         self.app_to_state = dict()
         self.logger = utils.get_logger("%s_FullStateVersionManager" % appname)
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
-        self.version_graph_head= 'ROOT'
-        self.version_graph.start()
-
+        self.version_graph_head = "ROOT"
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)
@@ -409,8 +409,7 @@ class FullStateVersionManager(VersionManager):
         if start_v == end_v:
             # The versions are the same, lets ignore.
             return True
-        if start_v!= self.version_graph_head:
-        #if start_v != self.version_graph.head.current:
+        if start_v != self.version_graph_head:
             self.resolve_conflict(start_v, end_v, package, from_external)
         else:
             self.version_graph.continue_chain(start_v, end_v, package)
@@ -419,18 +418,9 @@ class FullStateVersionManager(VersionManager):
         return True
 
     def retrieve_data(self, appname, version):
-
         data, version_change = self.retrieve_data_nomaintain(version)
         self.set_app_marker(appname, version_change[1])
         return data, version_change
-
-    #def retrieve_data_nomaintain(self, version):
-        #merged = dict()
-        #if version not in self.version_graph.nodes:
-            #return merged, [version, version]
-        #for delta in self.version_graph[version:]:
-            #merged = utils.merge_state_delta(merged, delta)
-        #return merged, [version, self.version_graph.head.current]
 
     def retrieve_data_nomaintain(self, version):
         merged = dict()
@@ -446,7 +436,6 @@ class FullStateVersionManager(VersionManager):
             self.maintain(app, version[1])
 
     def resolve_conflict(self, start_v, end_v, package, from_external):
-        #new_v = self.version_graph.head.current
         new_v= self.version_graph_head
         change, _ = self.retrieve_data_nomaintain(start_v)
         t_new_merge, t_conflict_merge = self.operational_transform(
@@ -479,6 +468,7 @@ class FullStateVersionManager(VersionManager):
         #if self.instrument_record:
             #self.instrument_record.put(
                 #("MEMORY", "{0}\t{1}\t{2}\n".format(time.time(), len(self.version_graph.nodes), len(self.version_graph.edges))))
+
 
 class TypeVersionManager(VersionManager):
     def __init__(self, appname, types, dump_graph):
