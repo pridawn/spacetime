@@ -43,6 +43,13 @@ class Graph(object):
         self.nodes = {"ROOT": self.tail}
         self.edges = dict()
 
+    def convert_to_json(self):
+        graph_jsonified = {'nodes': [node.current for node in self.nodes.values()],
+                           'head': self.head.current,
+                           'tail': self.tail.current,
+                           'edges': self.edges}
+        return json.dumps(graph_jsonified)
+
     def __getitem__(self, key):
         if isinstance(key, slice):
             step_reverse = ((key.step is not None) and (key.step < 0))
@@ -182,7 +189,7 @@ class VersionGraphProcess(Process):
         result_queue.put(list(self.graph.__getitem__(key)))
 
     def process_display_graph(self, display_queue):
-        display_queue.put(json.dumps(self.graph.edges))
+        display_queue.put(self.graph.convert_to_json())
 
     def run(self):
         while True:

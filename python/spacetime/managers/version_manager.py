@@ -9,9 +9,7 @@ import spacetime.utils.utils as utils
 from spacetime.utils.enums import Event, VersionBy
 import time
 from flask import Flask
-
-app = Flask(__name__)
-app.config["DEBUG"] = True
+from threading import Thread
 
 
 class VersionManagerProcess(Process):
@@ -398,19 +396,20 @@ class FullStateVersionManager(VersionManager):
         def create_flask_app(self):
             app = Flask(__name__)
             #app.config["DEBUG"] = True
-
+            
             @app.route('/graph', methods=['GET'])
             def graph():
                 return self.version_graph.display_graph()
-
             return app
+
+
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
         self.debug = debug
         if self.debug:
             self.version_graph = VersionGraphProcess()
-            app = create_flask_app(self)
-            app.run()
+            self.app = create_flask_app(self)
+            #app.run()
         else:
             self.version_graph = Graph()
         self.state_to_app = dict()
@@ -419,7 +418,8 @@ class FullStateVersionManager(VersionManager):
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
-
+        self.flask_app_thread = Thread(target=self.app.run())
+        self.flask_app_thread.start()
 
 
     def set_app_marker(self, appname, end_v):
