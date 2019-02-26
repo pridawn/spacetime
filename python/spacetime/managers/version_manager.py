@@ -394,11 +394,22 @@ class VersionManager(object):
 class FullStateVersionManager(VersionManager):
 
     def __init__(self, appname, types, dump_graph, instrument_record, debug=False):
+
+        def create_flask_app(self):
+            app = Flask(__name__)
+            app.config["DEBUG"] = True
+
+            @app.route('/graph', methods=['GET'])
+            def graph():
+                return self.version_graph.display_graph()
+
+            return app
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
         self.debug = debug
         if self.debug:
             self.version_graph = VersionGraphProcess()
+            app = create_flask_app(self)
             app.run()
         else:
             self.version_graph = Graph()
@@ -409,9 +420,7 @@ class FullStateVersionManager(VersionManager):
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
 
-    @app.route('/', methods=['GET'])
-    def home(self):
-        return self.version_graph.display_graph()
+
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)

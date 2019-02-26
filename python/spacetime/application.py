@@ -37,7 +37,7 @@ def get_app(func, types, producer,
         def __init__(
                 self, dataframe=None, server_port=0,
                 version_by=VersionBy.FULLSTATE, instrument=None, dump_graph=None,
-                connection_as=ConnectionStyle.TSocket):
+                connection_as=ConnectionStyle.TSocket, debug=False):
             self.appname = "{0}_{1}".format(func.__name__, str(uuid4()))
             self.producer = producer
             self.getter_setter = getter_setter
@@ -59,6 +59,7 @@ def get_app(func, types, producer,
             self.connection_as = connection_as
             super().__init__()
             self.daemon = False
+            self.debug = debug
 
         def run(self):
             # Create the dataframe.
@@ -91,7 +92,8 @@ def get_app(func, types, producer,
                     version_by=self.version_by,
                     connection_as=self.connection_as,
                     instrument=self.instrument,
-                    dump_graph=self.dump_graph)
+                    dump_graph=self.dump_graph,
+                    debug=self.debug)
             #print(self.appname, self.all_types, details, df.details)
             return df
     return App
@@ -117,10 +119,11 @@ def Application(
         target, dataframe=None, server_port=0,
         Types=list(), Producer=list(), GetterSetter=list(),
         Getter=list(), Setter=list(), Deleter=list(),
-        version_by=VersionBy.FULLSTATE, instrument=None, dump_graph=None, connection_as=ConnectionStyle.TSocket):
+        version_by=VersionBy.FULLSTATE, instrument=None, dump_graph=None, connection_as=ConnectionStyle.TSocket
+        , debug=False):
     app_cls = get_app(
         target, set(Types), set(Producer), set(GetterSetter),
         set(Getter), set(Setter), set(Deleter))
     return app_cls(
         dataframe=dataframe, server_port=server_port, version_by=version_by,
-        instrument=instrument, dump_graph=dump_graph, connection_as=connection_as)
+        instrument=instrument, dump_graph=dump_graph, connection_as=connection_as, debug=debug)

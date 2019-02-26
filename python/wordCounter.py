@@ -14,29 +14,25 @@ import time
 
 @pcc_set
 class word_class(object):
-    # word_id= primarykey(int)
+
     word_desc = primarykey(str)
     word_count = dimension(int)
 
     def __init__(self, word_desc, word_count):
 
-        # self.word_id=random.randint(0,100000)
         self.word_desc = word_desc
         self.word_count = word_count
 
     def __str__(self):
-        return (self.word_desc + ' count: ' + str(self.word_count))
+        return self.word_desc + ' count: ' + str(self.word_count)
 
     @merge
     def merge_func(original, mine, theirs):
 
         if original is None:
             theirs.word_count = mine.word_count + theirs.word_count
-
         else:
-
             theirs.word_count = mine.word_count + theirs.word_count - original.word_count
-
         return theirs
 
 
@@ -88,8 +84,7 @@ def main():
     # parser = argparse.ArgumentParser()
     # parser.add_argument("filename")
     # args = parser.parse_args()
-    app = Application(reducer, Types=[word_class])
-    app.start()
+    app = Application(reducer, Types=[word_class], debug=True)
     app.start()
 
 

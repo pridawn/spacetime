@@ -182,7 +182,7 @@ class VersionGraphProcess(Process):
         result_queue.put(list(self.graph.__getitem__(key)))
 
     def process_display_graph(self, display_queue):
-        display_queue.put(json.dumps(self.graph))
+        display_queue.put(json.dumps([self.graph.head.current:self.graph.tail.current]))
 
     def run(self):
         while True:
@@ -207,12 +207,12 @@ class VersionGraphProcess(Process):
         self.read_write_queue.put(("maintain", state_to_ref, merger_function))
 
     def __getitem__(self, key):
-        result_queue = self.manager.Queue()
+        result_queue = Manager().Queue()
         self.read_write_queue.put(("get_item", key,result_queue))
         return result_queue.get()
 
     def display_graph(self):
-        display_queue = self.manager.Queue()
+        display_queue = Manager().Queue()
         self.read_write_queue.put(("display",display_queue))
         return display_queue.get()
 

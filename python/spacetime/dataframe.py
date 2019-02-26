@@ -32,11 +32,12 @@ class Dataframe(object):
             self, appname, types, details=None, server_port=0,
             version_by=enums.VersionBy.FULLSTATE, separate_dag=False,
             connection_as=enums.ConnectionStyle.TSocket,
-            instrument=None, dump_graph=None):
+            instrument=None, dump_graph=None, debug=False):
         self.appname = appname
         self.logger = utils.get_logger("%s_Dataframe" % appname)
         self.version_by = version_by
         self.instrument = instrument
+        self.debug = debug
         if self.instrument:
             self.instrument_done = False
             self.instrument_record = Queue()
@@ -76,7 +77,7 @@ class Dataframe(object):
                 self.appname, types, version_by)
             self.versioned_heap.start()
         elif version_by == enums.VersionBy.FULLSTATE:
-            self.versioned_heap = FullStateVersionManager(self.appname, types, dump_graph, self.instrument_record)
+            self.versioned_heap = FullStateVersionManager(self.appname, types, dump_graph, self.instrument_record,debug=self.debug)
         elif version_by == enums.VersionBy.TYPE:
             self.versioned_heap = TypeVersionManager(self.appname, types, dump_graph)
         elif version_by == enums.VersionBy.OBJECT_NOSTORE:
