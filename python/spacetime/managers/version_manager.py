@@ -397,7 +397,7 @@ class FullStateVersionManager(VersionManager):
 
         def create_flask_app(self):
             app = Flask(__name__)
-            app.config["DEBUG"] = True
+            #app.config["DEBUG"] = True
 
             @app.route('/graph', methods=['GET'])
             def graph():

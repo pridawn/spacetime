@@ -182,7 +182,7 @@ class VersionGraphProcess(Process):
         result_queue.put(list(self.graph.__getitem__(key)))
 
     def process_display_graph(self, display_queue):
-        display_queue.put(json.dumps([self.graph.head.current:self.graph.tail.current]))
+        display_queue.put(json.dumps(self.graph.edges))
 
     def run(self):
         while True:
