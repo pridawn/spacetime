@@ -4,11 +4,14 @@ import os
 from uuid import uuid4
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Process, Queue
-from spacetime.managers.version_graph import VersionGraphProcess
+from spacetime.managers.version_graph import VersionGraphProcess,Graph
 import spacetime.utils.utils as utils
 from spacetime.utils.enums import Event, VersionBy
 import time
+from flask import Flask
 
+app = Flask(__name__)
+app.config["DEBUG"] = True
 
 
 class VersionManagerProcess(Process):
@@ -390,16 +393,25 @@ class VersionManager(object):
 
 class FullStateVersionManager(VersionManager):
 
-    def __init__(self, appname, types, dump_graph, instrument_record):
+    def __init__(self, appname, types, dump_graph, instrument_record, debug=False):
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
-        self.version_graph = VersionGraphProcess()
+        self.debug = debug
+        if self.debug:
+            self.version_graph = VersionGraphProcess()
+            app.run()
+        else:
+            self.version_graph = Graph()
         self.state_to_app = dict()
         self.app_to_state = dict()
         self.logger = utils.get_logger("%s_FullStateVersionManager" % appname)
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
+
+    @app.route('/', methods=['GET'])
+    def home(self):
+        return self.version_graph.display_graph()
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)
@@ -413,7 +425,7 @@ class FullStateVersionManager(VersionManager):
             self.resolve_conflict(start_v, end_v, package, from_external)
         else:
             self.version_graph.continue_chain(start_v, end_v, package)
-            self.version_graph_head=end_v
+            self.version_graph_head = end_v
         self.maintain(appname, end_v)
         return True
 
@@ -436,12 +448,12 @@ class FullStateVersionManager(VersionManager):
             self.maintain(app, version[1])
 
     def resolve_conflict(self, start_v, end_v, package, from_external):
-        new_v= self.version_graph_head
+        new_v = self.version_graph_head
         change, _ = self.retrieve_data_nomaintain(start_v)
         t_new_merge, t_conflict_merge = self.operational_transform(
             start_v, change, package, from_external)
         merge_v = str(uuid4())
-        self.version_graph_head=merge_v
+        self.version_graph_head = merge_v
         self.version_graph.continue_chain(start_v, end_v, package)
         self.version_graph.continue_chain(new_v, merge_v, t_new_merge)
         self.version_graph.continue_chain(end_v, merge_v, t_conflict_merge)

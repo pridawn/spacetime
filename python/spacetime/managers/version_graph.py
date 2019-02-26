@@ -1,5 +1,6 @@
 from multiprocessing import Process, RLock,Manager
 from threading import Thread
+import json
 
 
 class Node(object):
@@ -46,7 +47,10 @@ class Graph(object):
         if isinstance(key, slice):
             step_reverse = ((key.step is not None) and (key.step < 0))
             if key.start:
-                start = self.nodes[key.start]
+                try:
+                    start = self.nodes[key.start]
+                except KeyError:
+                    return list()
             elif step_reverse:
                 start = self.head
             else:
@@ -163,7 +167,8 @@ class VersionGraphProcess(Process):
     def __init__(self):
         self.graph = Graph()
         super().__init__()
-        self.read_write_queue = Manager().Queue()
+        self.manager=Manager()
+        self.read_write_queue = self.manager.Queue()
         self.daemon = True
         self.start()
 
@@ -173,8 +178,11 @@ class VersionGraphProcess(Process):
     def process_maintain(self, state_to_ref, merger_function):
         self.graph.maintain(state_to_ref, merger_function)
 
-    def process_get_item(self, key,result_queue):
+    def process_get_item(self, key, result_queue):
         result_queue.put(list(self.graph.__getitem__(key)))
+
+    def process_display_graph(self, display_queue):
+        display_queue.put(json.dumps(self.graph))
 
     def run(self):
         while True:
@@ -188,6 +196,9 @@ class VersionGraphProcess(Process):
                 elif req[0] == "get_item":
                     key, result_queue = req[1],req[2]
                     self.process_get_item(key, result_queue)
+                elif req[0] == "display":
+                    display_queue = req[1]
+                    self.process_display_graph(display_queue)
 
     def continue_chain(self, from_version, to_version, package):
         self.read_write_queue.put(("continue_chain", from_version, to_version, package))
@@ -196,6 +207,12 @@ class VersionGraphProcess(Process):
         self.read_write_queue.put(("maintain", state_to_ref, merger_function))
 
     def __getitem__(self, key):
-        result_queue = Manager().Queue()
+        result_queue = self.manager.Queue()
         self.read_write_queue.put(("get_item", key,result_queue))
-        return result_queue.get()  
+        return result_queue.get()
+
+    def display_graph(self):
+        display_queue = self.manager.Queue()
+        self.read_write_queue.put(("display",display_queue))
+        return display_queue.get()
+
