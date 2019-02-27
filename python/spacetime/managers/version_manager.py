@@ -409,6 +409,9 @@ class FullStateVersionManager(VersionManager):
         if self.debug:
             self.version_graph = VersionGraphProcess()
             self.app = create_flask_app(self)
+            self.app.run(threaded=True)
+            #self.flask_app_thread = Thread(target=self.app.run(port=5050),daemon=True)
+            #self.flask_app_thread.start()
             #app.run()
         else:
             self.version_graph = Graph()
@@ -418,9 +421,6 @@ class FullStateVersionManager(VersionManager):
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
-        self.flask_app_thread = Thread(target=self.app.run())
-        self.flask_app_thread.start()
-
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)
