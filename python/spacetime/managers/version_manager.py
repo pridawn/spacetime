@@ -8,7 +8,6 @@ from spacetime.managers.version_graph import VersionGraphProcess,Graph
 import spacetime.utils.utils as utils
 from spacetime.utils.enums import Event, VersionBy
 import time
-from flask import Flask
 from threading import Thread
 
 
@@ -393,34 +392,19 @@ class FullStateVersionManager(VersionManager):
 
     def __init__(self, appname, types, dump_graph, instrument_record, debug=False):
 
-        def create_flask_app(self):
-            app = Flask(__name__)
-            #app.config["DEBUG"] = True
-            
-            @app.route('/graph', methods=['GET'])
-            def graph():
-                return self.version_graph.display_graph()
-            return app
-
-
         self.types = types
         self.type_map = {tp.__r_meta__.name: tp for tp in types}
         self.debug = debug
-        if self.debug:
-            self.version_graph = VersionGraphProcess()
-            self.app = create_flask_app(self)
-            self.app.run(threaded=True)
-            #self.flask_app_thread = Thread(target=self.app.run(port=5050),daemon=True)
-            #self.flask_app_thread.start()
-            #app.run()
-        else:
-            self.version_graph = Graph()
         self.state_to_app = dict()
         self.app_to_state = dict()
         self.logger = utils.get_logger("%s_FullStateVersionManager" % appname)
         self.dump_graphs = dump_graph
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
+        if self.debug:
+            self.version_graph = VersionGraphProcess()
+        else:
+            self.version_graph = Graph()
 
     def set_app_marker(self, appname, end_v):
         self.state_to_app.setdefault(end_v, set()).add(appname)

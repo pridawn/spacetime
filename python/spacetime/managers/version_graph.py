@@ -1,6 +1,7 @@
-from multiprocessing import Process, RLock,Manager
+from multiprocessing import Process, RLock, Manager, Event
 from threading import Thread
 import json
+from flask import Flask
 
 
 class Node(object):
@@ -48,7 +49,8 @@ class Graph(object):
                            'head': self.head.current,
                            'tail': self.tail.current,
                            'edges': self.edges}
-        return json.dumps(graph_jsonified)
+        return json.dumps({'nodes': [node.current for node in self.nodes.values()],'head': self.head.current,
+                           'tail': self.tail.current})
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -174,52 +176,67 @@ class VersionGraphProcess(Process):
     def __init__(self):
         self.graph = Graph()
         super().__init__()
-        self.manager=Manager()
+        self.manager = Manager()
+        self.result_manager = Manager()
+        self.event_manager = Manager()
         self.read_write_queue = self.manager.Queue()
-        self.daemon = True
+        self.request_list = []
+
+        def create_flask_app(self):
+            app = Flask(__name__)
+            #app.config["DEBUG"] = True
+
+            @app.route('/next', methods=['GET'])
+            def graph():
+                req = self.read_write_queue.get()
+                self.request_list.append(req[0])
+                if req[0] == "continue_chain":
+                    from_version, to_version, package, e1 = req[1:]
+                    self.process_continue_chain(from_version, to_version, package, e1)
+                elif req[0] == "maintain":
+                    state_to_ref, merger_function, e2 = req[1:]
+                    self.process_maintain(state_to_ref, merger_function, e2)
+                elif req[0] == "get_item":
+                    key, result_queue = req[1], req[2]
+                    self.process_get_item(key, result_queue)
+                return self.graph.convert_to_json()
+
+            @app.route('/displayQueue', methods=['GET'])
+            def display_request_queue():
+                request_string = str(self.request_list)
+                return request_string
+
+            return app
+        self.app = create_flask_app(self)
         self.start()
 
-    def process_continue_chain(self, from_version, to_version, package):
+    def process_continue_chain(self, from_version, to_version, package, e1):
         self.graph.continue_chain(from_version, to_version, package)
+        e1.set()
 
-    def process_maintain(self, state_to_ref, merger_function):
+    def process_maintain(self, state_to_ref, merger_function, e2):
         self.graph.maintain(state_to_ref, merger_function)
+        e2.set()
 
     def process_get_item(self, key, result_queue):
         result_queue.put(list(self.graph.__getitem__(key)))
 
-    def process_display_graph(self, display_queue):
-        display_queue.put(self.graph.convert_to_json())
-
     def run(self):
-        while True:
-                req = self.read_write_queue.get()
-                if req[0] == "continue_chain":
-                    from_version, to_version, package = req[1:]
-                    self.process_continue_chain(from_version, to_version, package)
-                elif req[0] == "maintain":
-                    state_to_ref, merger_function = req[1:]
-                    self.process_maintain(state_to_ref, merger_function)
-                elif req[0] == "get_item":
-                    key, result_queue = req[1],req[2]
-                    self.process_get_item(key, result_queue)
-                elif req[0] == "display":
-                    display_queue = req[1]
-                    self.process_display_graph(display_queue)
+        self.app.run()
 
     def continue_chain(self, from_version, to_version, package):
-        self.read_write_queue.put(("continue_chain", from_version, to_version, package))
+        e1 = self.event_manager.Event()
+        self.read_write_queue.put(("continue_chain", from_version, to_version, package, e1))
+        e1.wait()
 
     def maintain(self, state_to_ref, merger_function):
-        self.read_write_queue.put(("maintain", state_to_ref, merger_function))
+        e2 = self.event_manager.Event()
+        self.read_write_queue.put(("maintain", state_to_ref, merger_function, e2))
+        e2.wait()
 
     def __getitem__(self, key):
-        result_queue = Manager().Queue()
+        result_queue = self.result_manager.Queue()
         self.read_write_queue.put(("get_item", key,result_queue))
         return result_queue.get()
 
-    def display_graph(self):
-        display_queue = Manager().Queue()
-        self.read_write_queue.put(("display",display_queue))
-        return display_queue.get()
 
