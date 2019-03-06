@@ -1,7 +1,8 @@
 from multiprocessing import Process, RLock, Manager, Event
 from threading import Thread
 import json
-from flask import Flask
+from flask import Flask, request, render_template
+import requests
 
 
 class Node(object):
@@ -45,12 +46,61 @@ class Graph(object):
         self.edges = dict()
 
     def convert_to_json(self):
-        graph_jsonified = {'nodes': [node.current for node in self.nodes.values()],
-                           'head': self.head.current,
-                           'tail': self.tail.current,
-                           'edges': self.edges}
-        return json.dumps({'nodes': [node.current for node in self.nodes.values()],'head': self.head.current,
-                           'tail': self.tail.current})
+        node_list=[]
+        edge_list=[]
+        alist=[]
+        for i, node in enumerate(self.nodes.values()):
+            if node == self.head:
+                node_list.append({'id': i, 'name': node.current[:4], 'type': 'head'})
+            else:    
+                node_list.append({'id': i, 'name': node.current[:4], 'type': 'not_head'})
+            alist.append(node.current)
+        for edge in self.edges.values():
+            source_node = edge.from_node
+            source_id = alist.index(source_node)
+            target_node = edge.to_node
+            target_id = alist.index(target_node)
+            edge_list.append({'source_id': source_id,'target_id': target_id, 'label': str(edge.payload)})
+
+        graph_jsonified = {'nodes': node_list,
+                           'links': edge_list }
+        #graph_hier = self.create_hierarchy('ROOT', '', True)
+        print(json.dumps(graph_jsonified))
+        return json.dumps(graph_jsonified)
+
+    def create_hierarchy(self, node, graph_hier, first_sibling):
+        
+        if first_sibling:
+            graph_hier = graph_hier + '{\n"name": "' + node + '"\n'
+        else:
+            graph_hier = graph_hier + ',{\n"name": "' + node + '"\n'
+            
+        i = 0
+        already_has_a_child = False
+        first_sibling = False
+        is_not_leaf = False
+        edge_list = list(self.edges.values())
+
+        while i < len(edge_list):
+            if first_sibling:
+                first_sibling = False
+            if edge_list[i].from_node == node:
+                is_not_leaf = True
+                if not already_has_a_child:
+                    already_has_a_child = True
+                    first_sibling = True
+                    graph_hier = graph_hier + ',"children":['
+                child = edge_list[i].to_node
+                graph_hier = self.create_hierarchy(child, graph_hier, first_sibling)
+            i += 1
+
+        if i == len(self.edges):
+            if is_not_leaf:
+                graph_hier = graph_hier + ']}'
+            else:
+                graph_hier = graph_hier + '}'
+            return graph_hier
+
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -173,70 +223,96 @@ class Graph(object):
 
 class VersionGraphProcess(Process):
 
-    def __init__(self):
+    def __init__(self, appname):
+        self.appname = appname
         self.graph = Graph()
         super().__init__()
         self.manager = Manager()
         self.result_manager = Manager()
-        self.event_manager = Manager()
         self.read_write_queue = self.manager.Queue()
         self.request_list = []
-
-        def create_flask_app(self):
-            app = Flask(__name__)
-            #app.config["DEBUG"] = True
-
-            @app.route('/next', methods=['GET'])
-            def graph():
-                req = self.read_write_queue.get()
-                self.request_list.append(req[0])
-                if req[0] == "continue_chain":
-                    from_version, to_version, package, e1 = req[1:]
-                    self.process_continue_chain(from_version, to_version, package, e1)
-                elif req[0] == "maintain":
-                    state_to_ref, merger_function, e2 = req[1:]
-                    self.process_maintain(state_to_ref, merger_function, e2)
-                elif req[0] == "get_item":
-                    key, result_queue = req[1], req[2]
-                    self.process_get_item(key, result_queue)
-                return self.graph.convert_to_json()
-
-            @app.route('/displayQueue', methods=['GET'])
-            def display_request_queue():
-                request_string = str(self.request_list)
-                return request_string
-
-            return app
-        self.app = create_flask_app(self)
+        self.app = self.create_flask_app()
         self.start()
 
-    def process_continue_chain(self, from_version, to_version, package, e1):
-        self.graph.continue_chain(from_version, to_version, package)
-        e1.set()
+    def __del__(self):
+        res = requests.get('http://127.0.0.1:5000/shutdown').content
+        print(res)
 
-    def process_maintain(self, state_to_ref, merger_function, e2):
+    def create_flask_app(self):
+        app = Flask(__name__)
+
+        # app.config["DEBUG"] = True
+
+        def shutdown_server():
+            func = request.environ.get('werkzeug.server.shutdown')
+            if func is None:
+                raise RuntimeError('Not running with the Werkzeug Server')
+            func()
+
+        @app.route('/next', methods=['GET'])
+        def graph():
+            if not self.request_list:
+                return self.graph.convert_to_json()
+            req = self.request_list.pop(0)
+            if req[0] == "Continue chain":
+                from_version, to_version, package, continue_chain_event = req[1:]
+                self.process_continue_chain(from_version, to_version, package, continue_chain_event)
+            elif req[0] == "Maintain":
+                state_to_ref, merger_function, maintain_event = req[1:]
+                self.process_maintain(state_to_ref, merger_function, maintain_event)
+            elif req[0] == "Get item":
+                key, result_queue = req[1], req[2]
+                self.process_get_item(key, result_queue)
+            #return self.graph.convert_to_json()
+            # return render_template('test.html')
+            #return render_template('tree_test.html',value=self.graph.convert_to_json())
+            return render_template('DAG.html',graph_view=self.graph.convert_to_json(),request_view=[req[0] for req in self.request_list])
+
+        @app.route('/data.json', methods=['GET'])
+        def return_json():
+            return self.graph.convert_to_json()
+
+        @app.route('/displayQueue', methods=['GET'])
+        def display_request_queue():
+            return  render_template('DAG.html',graph_view=self.graph.convert_to_json(),request_view=[req[0] for req in self.request_list])
+
+        @app.route('/shutdown', methods=['GET'])
+        def shutdown():
+            shutdown_server()
+            return 'Server shutting down...'
+
+
+        return app
+
+    def process_continue_chain(self, from_version, to_version, package, continue_chain_event):
+        self.graph.continue_chain(from_version, to_version, package)
+        continue_chain_event.set()
+
+    def process_maintain(self, state_to_ref, merger_function, maintain_event):
         self.graph.maintain(state_to_ref, merger_function)
-        e2.set()
+        maintain_event.set()
 
     def process_get_item(self, key, result_queue):
         result_queue.put(list(self.graph.__getitem__(key)))
 
     def run(self):
-        self.app.run()
+        flask_thread = Thread(target=self.app.run, daemon=True)
+        flask_thread.start()
+        while True:
+            req = self.read_write_queue.get()
+            self.request_list.append(req)
 
     def continue_chain(self, from_version, to_version, package):
-        e1 = self.event_manager.Event()
-        self.read_write_queue.put(("continue_chain", from_version, to_version, package, e1))
-        e1.wait()
+        continue_chain_event = self.manager.Event()
+        self.read_write_queue.put(("Continue chain", from_version, to_version, package, continue_chain_event))
+        continue_chain_event.wait()
 
     def maintain(self, state_to_ref, merger_function):
-        e2 = self.event_manager.Event()
-        self.read_write_queue.put(("maintain", state_to_ref, merger_function, e2))
-        e2.wait()
+        maintain_event = self.manager.Event()
+        self.read_write_queue.put(("Maintain", state_to_ref, merger_function, maintain_event))
+        maintain_event.wait()
 
     def __getitem__(self, key):
         result_queue = self.result_manager.Queue()
-        self.read_write_queue.put(("get_item", key,result_queue))
+        self.read_write_queue.put(("Get item", key, result_queue))
         return result_queue.get()
-
-

@@ -402,7 +402,7 @@ class FullStateVersionManager(VersionManager):
         self.instrument_record = instrument_record
         self.version_graph_head = "ROOT"
         if self.debug:
-            self.version_graph = VersionGraphProcess()
+            self.version_graph = VersionGraphProcess(appname)
         else:
             self.version_graph = Graph()
 
