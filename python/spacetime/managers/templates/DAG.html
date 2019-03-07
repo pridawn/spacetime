@@ -3,8 +3,9 @@
 <head>
 <style>
 g.head > rect {
-  fill: #ADD8E6;
+  fill: #98FB98; //#ADD8E6;
 }
+
 
 text {
   font-weight: 300;
@@ -21,7 +22,7 @@ text {
 
 .edgePath path {
   stroke:#000000; //#333;
-  stroke-width: 5px;
+  stroke-width: 2px;
 }
 
 .node text {
@@ -32,7 +33,7 @@ text {
 .tipsy .name {
   font-size: 1.5em;
   font-weight: bold;
-  color: #D3D3D3;
+  color: #000000;
   margin: 0;
 }
 
@@ -42,7 +43,7 @@ text {
 }
 
 .tipsy { font-size: 10px; position: absolute; padding: 5px; z-index: 100000; }
-.tipsy-inner { background-color: #D3D3D3; color: #FFF; max-width: 200px; padding: 5px 8px 4px 8px; text-align: center; }
+.tipsy-inner { background-color: #D3D3D3; color: #FFF; max-width: 400px; padding: 5px 8px 4px 8px; text-align: center; }
  </style>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -71,7 +72,7 @@ var g = new dagreD3.graphlib.Graph()
 var graph ={{graph_view|safe}}
 
 graph.nodes.forEach(function(d){
-   g.setNode(d.id, { label: d.name, class: d.type});
+   g.setNode(d.id, { label: d.name, class: d.type , style: d.style});
   });
 
 console.log(g);

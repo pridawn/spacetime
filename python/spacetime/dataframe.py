@@ -60,7 +60,7 @@ class Dataframe(object):
         self.socket_server = SocketServer(
             self.appname, server_port,
             self.pull_call_back, self.push_call_back, self.confirm_pull_req,
-            self.instrument_record)
+            self.instrument_record, debug=self.debug)
 
         self.socket_connector = SocketConnector(
             self.appname, details, self.details, types, version_by,
@@ -77,7 +77,7 @@ class Dataframe(object):
                 self.appname, types, version_by)
             self.versioned_heap.start()
         elif version_by == enums.VersionBy.FULLSTATE:
-            self.versioned_heap = FullStateVersionManager(self.appname, types, dump_graph, self.instrument_record,debug=self.debug)
+            self.versioned_heap = FullStateVersionManager(self.appname, types, dump_graph, self.instrument_record, debug=self.debug)
         elif version_by == enums.VersionBy.TYPE:
             self.versioned_heap = TypeVersionManager(self.appname, types, dump_graph)
         elif version_by == enums.VersionBy.OBJECT_NOSTORE:

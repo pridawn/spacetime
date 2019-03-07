@@ -73,7 +73,6 @@ def reducer(df):
     mapper_app2.start_async(word_list2)
     mapper_app1.join()
     mapper_app2.join()
-    time.sleep(1)
 
     df.checkout()
     for word_obj in df.read_all(word_class):
@@ -86,6 +85,7 @@ def main():
     # args = parser.parse_args()
     app = Application(reducer, Types=[word_class], debug=True)
     app.start()
+
 
 
 main()

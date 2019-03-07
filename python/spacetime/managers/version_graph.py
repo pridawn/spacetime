@@ -51,9 +51,11 @@ class Graph(object):
         alist=[]
         for i, node in enumerate(self.nodes.values()):
             if node == self.head:
-                node_list.append({'id': i, 'name': node.current[:4], 'type': 'head'})
+                node_list.append({'id': i, 'name': node.current[:4], 'type': 'head',
+                                  'style': "stroke:#006400" if node.is_master else "stroke:#8B0000"})
             else:    
-                node_list.append({'id': i, 'name': node.current[:4], 'type': 'not_head'})
+                node_list.append({'id': i, 'name': node.current[:4], 'type': 'not_head',
+                                  'style': "stroke:#006400" if node.is_master else "stroke:#8B0000"})
             alist.append(node.current)
         for edge in self.edges.values():
             source_node = edge.from_node
