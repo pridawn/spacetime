@@ -158,12 +158,14 @@ class Graph(object):
         else:
             raise RuntimeError("Cannot deal with non slice operators.")
 
-    def continue_chain(self, from_version, to_version, package):
+    def continue_chain(
+            self, from_version, to_version, package, force_branch=False):
         from_version_node = self.nodes.setdefault(
             from_version, Node(from_version, from_version == self.head.current))
 
         to_version_node = self.nodes.setdefault(
-            to_version, Node(to_version, from_version == self.head.current))
+            to_version, Node(
+                to_version, (not force_branch) and from_version == self.head.current))
         to_version_node.set_prev(from_version)
 
         edge = Edge(from_version, to_version, package)
@@ -172,6 +174,7 @@ class Graph(object):
         from_version_node.set_next(to_version)
         if from_version == self.head.current:
             self.head = to_version_node
+        return
 
     def delete_item(self, version):
         pass
@@ -203,6 +206,10 @@ class Graph(object):
         del self.edges[(node.current, node.next_master)]
         self.nodes[node.prev_master].all_next.remove(node.current)
         self.nodes[node.next_master].all_prev.remove(node.current)
+        if (self.nodes[node.prev_master].is_master
+                and self.nodes[node.next_master].is_master and not node.is_master):
+            # This is a branch, that can be deleted.
+            return
         if (node.prev_master, node.next_master) not in self.edges:
             self.edges[(node.prev_master, node.next_master)] = Edge(
                 node.prev_master, node.next_master, new_payload)
@@ -239,6 +246,7 @@ class Graph(object):
         self.state_to_app = state_to_ref
         self.app_to_state = app_to_state
         # Delete edges that are useless.
+        c = deepcopy(self.nodes), deepcopy(self.edges)
         self.maintain_edges()
         # Merge nodes that are chaining without anyone looking at them
         # First divergent.
