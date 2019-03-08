@@ -372,7 +372,7 @@ class VersionManager(object):
                 app_to_state, state_to_app))
         # Clean up states.
 
-        graph.maintain(state_to_app, merge_func)
+        graph.maintain(state_to_app, app_to_state, merge_func)
         if self.dump_graphs:
             self.dump(self.dump_graphs, graph)
 

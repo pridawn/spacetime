@@ -20,9 +20,14 @@ text {
   stroke-width: 2.5px;
 }
 
-.edgePath path {
-  stroke:#000000; //#333;
-  stroke-width: 2px;
+//.edgePath path {
+  //stroke:#000000; //#333;
+  //stroke-width: 2px;
+//}
+.edgePath path.path {
+  stroke: #333;
+  fill: none;
+  stroke-width: 1.5px;
 }
 
 .node text {
@@ -57,12 +62,12 @@ text {
 <body>
 
 <div class="container">
-<h2 class="jumbotron" style="text-align: center">Version Graph Debugger</h2>
+<h2 class="jumbotron" style="text-align: center">Spacetime Debugger</h2>
 
 <div class="row">
 <div class="col-lg-6">
     <h3 style="text-align: center">Graph</h3>
-    <svg id="svg-canvas" width=570 height=600 ></svg>
+    <svg id="svg-canvas" width=960 height=600 ></svg>
 <script>
     // Create the input graph
 var g = new dagreD3.graphlib.Graph()
@@ -84,7 +89,7 @@ g.nodes().forEach(function(v) {
 });
 
 graph.links.forEach(function(d){
-    g.setEdge(d.source_id, d.target_id, {"payload": d.label});
+    g.setEdge(d.source_id, d.target_id, {"payload": d.label, style:d.style, arrowheadStyle:d.arrowheadStyle });
   });
 
 var styleTooltip = function(desc) {
@@ -110,7 +115,7 @@ svgGroup.selectAll("g.edgePath")
   .each(function(v) { $(this).tipsy({ gravity: "n", opacity: 1, html: true }); });
 
 // Center the graph
-var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
+var xCenterOffset = (svg.attr("width") - g.graph().width) / 5;
 svgGroup.attr("transform", "translate(" + xCenterOffset + ", 20)");
 svg.attr("height", g.graph().height + 40);
 

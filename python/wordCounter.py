@@ -61,18 +61,29 @@ def mapper(df, word_list):
 
 
 def reducer(df):
+    n = 4
+    mapper_app = []
+    word_lists = []
     with open('testFile.txt') as f:
         word_list = re.sub(r'[^\w\s]', '', f.read()).split()
     # x = list(divide_chunks(word_list, n))
     word_list1 = word_list[:len(word_list) // 2]
     word_list2 = word_list[len(word_list) // 2:]
 
-    mapper_app1 = Application(mapper, Types=[word_class], dataframe=df)
+    '''mapper_app1 = Application(mapper, Types=[word_class], dataframe=df)
     mapper_app2 = Application(mapper, Types=[word_class], dataframe=df)
     mapper_app1.start_async(word_list1)
     mapper_app2.start_async(word_list2)
     mapper_app1.join()
-    mapper_app2.join()
+    mapper_app2.join()'''
+    word_lists = list(divide_chunks(word_list, 10))
+    print(len(word_lists))
+    for i in range(len(word_lists)) :
+        mapper_app.append(Application(mapper, Types=[word_class], dataframe=df))
+    for i  in range(len(word_lists)):
+         mapper_app[i].start_async(word_lists[i])
+    for i in range(n):
+        mapper_app[i].join()
 
     df.checkout()
     for word_obj in df.read_all(word_class):

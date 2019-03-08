@@ -44,6 +44,8 @@ class Graph(object):
         self.head = self.tail
         self.nodes = {"ROOT": self.tail}
         self.edges = dict()
+        self.state_to_app = dict()
+        self.app_to_state = dict()
 
     def convert_to_json(self):
         node_list=[]
@@ -52,18 +54,38 @@ class Graph(object):
         for i, node in enumerate(self.nodes.values()):
             if node == self.head:
                 node_list.append({'id': i, 'name': node.current[:4], 'type': 'head',
+                                  'is_master': str(node.is_master),
                                   'style': "stroke:#006400" if node.is_master else "stroke:#8B0000"})
             else:    
                 node_list.append({'id': i, 'name': node.current[:4], 'type': 'not_head',
+                                  'is_master': str(node.is_master),
                                   'style': "stroke:#006400" if node.is_master else "stroke:#8B0000"})
             alist.append(node.current)
+
+        j = len(self.nodes.values())
+        for app in self.app_to_state.keys():
+            alist.append(app)
+            node_list.append({'id': j, 'name': app[:9], 'type': 'app', 'is_master': 'False',
+                              'style': "stroke:#696969; #stroke-width: 3px; stroke-dasharray: 5, 5;"})
+            j += 1
+
         for edge in self.edges.values():
             source_node = edge.from_node
             source_id = alist.index(source_node)
             target_node = edge.to_node
             target_id = alist.index(target_node)
-            edge_list.append({'source_id': source_id,'target_id': target_id, 'label': str(edge.payload)})
+            edge_list.append({'source_id': source_id,'target_id': target_id, 'label': str(edge.payload),
+                              'style':'stroke:#000000;stroke-width: 2px;','arrowheadStyle': ''})
 
+        for app in self.app_to_state.keys():
+            source_node = app
+            target_node = self.app_to_state[app]
+            source_id = alist.index(source_node)
+            target_id = alist.index(target_node)
+            edge_list.append({'source_id': source_id, 'target_id': target_id, 
+                              'label': '','style': "stroke: #696969; stroke-width: 3px; stroke-dasharray: 5, 5;",
+                              'arrowheadStyle': 'fill: #696969'})
+            
         graph_jsonified = {'nodes': node_list,
                            'links': edge_list }
         #graph_hier = self.create_hierarchy('ROOT', '', True)
@@ -213,7 +235,9 @@ class Graph(object):
         for node in mark_for_merge:
             self.merge_node(node, merger_function)
 
-    def maintain(self, state_to_ref, merger_function):
+    def maintain(self, state_to_ref, app_to_state, merger_function):
+        self.state_to_app = state_to_ref
+        self.app_to_state = app_to_state
         # Delete edges that are useless.
         self.maintain_edges()
         # Merge nodes that are chaining without anyone looking at them
@@ -254,20 +278,17 @@ class VersionGraphProcess(Process):
         @app.route('/next', methods=['GET'])
         def graph():
             if not self.request_list:
-                return self.graph.convert_to_json()
+                return render_template('DAG.html', graph_view=self.graph.convert_to_json(), request_view=[req[0] for req in self.request_list])
             req = self.request_list.pop(0)
             if req[0] == "Continue chain":
                 from_version, to_version, package, continue_chain_event = req[1:]
                 self.process_continue_chain(from_version, to_version, package, continue_chain_event)
             elif req[0] == "Maintain":
-                state_to_ref, merger_function, maintain_event = req[1:]
-                self.process_maintain(state_to_ref, merger_function, maintain_event)
+                state_to_ref, app_to_state, merger_function, maintain_event = req[1:]
+                self.process_maintain(state_to_ref, app_to_state, merger_function, maintain_event)
             elif req[0] == "Get item":
                 key, result_queue = req[1], req[2]
                 self.process_get_item(key, result_queue)
-            #return self.graph.convert_to_json()
-            # return render_template('test.html')
-            #return render_template('tree_test.html',value=self.graph.convert_to_json())
             return render_template('DAG.html',graph_view=self.graph.convert_to_json(),request_view=[req[0] for req in self.request_list])
 
         @app.route('/data.json', methods=['GET'])
@@ -276,7 +297,7 @@ class VersionGraphProcess(Process):
 
         @app.route('/displayQueue', methods=['GET'])
         def display_request_queue():
-            return  render_template('DAG.html',graph_view=self.graph.convert_to_json(),request_view=[req[0] for req in self.request_list])
+            return  render_template('DAG.html', graph_view=self.graph.convert_to_json(), request_view=[req[0] for req in self.request_list])
 
         @app.route('/shutdown', methods=['GET'])
         def shutdown():
@@ -290,8 +311,8 @@ class VersionGraphProcess(Process):
         self.graph.continue_chain(from_version, to_version, package)
         continue_chain_event.set()
 
-    def process_maintain(self, state_to_ref, merger_function, maintain_event):
-        self.graph.maintain(state_to_ref, merger_function)
+    def process_maintain(self, state_to_ref, app_to_state, merger_function, maintain_event):
+        self.graph.maintain(state_to_ref, app_to_state,  merger_function)
         maintain_event.set()
 
     def process_get_item(self, key, result_queue):
@@ -309,9 +330,9 @@ class VersionGraphProcess(Process):
         self.read_write_queue.put(("Continue chain", from_version, to_version, package, continue_chain_event))
         continue_chain_event.wait()
 
-    def maintain(self, state_to_ref, merger_function):
+    def maintain(self, state_to_ref, app_to_state, merger_function):
         maintain_event = self.manager.Event()
-        self.read_write_queue.put(("Maintain", state_to_ref, merger_function, maintain_event))
+        self.read_write_queue.put(("Maintain", state_to_ref, app_to_state, merger_function, maintain_event))
         maintain_event.wait()
 
     def __getitem__(self, key):
