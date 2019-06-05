@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<style>
+g.head > rect {
+  fill: #98FB98; //#ADD8E6;
+}
+
+
+text {
+  font-weight: 300;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  text-align: center;
+}
+
+.node rect {
+  stroke:#000000;//#333;// #999;
+  fill: #fff;
+  stroke-width: 2.5px;
+}
+
+//.edgePath path {
+  //stroke:#000000; //#333;
+  //stroke-width: 2px;
+//}
+.edgePath path.path {
+  stroke: #333;
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  pointer-events: none;
+}
+
+/* This styles the title of the tooltip */
+.tipsy .name {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #000000;
+  margin: 0;
+}
+
+/* This styles the body of the tooltip */
+.tipsy .description {
+  font-size: 1.2em;
+}
+
+.tipsy { font-size: 10px; position: absolute; padding: 5px; z-index: 100000; }
+.tipsy-inner { background-color: #D3D3D3; color: #FFF; max-width: 400px; padding: 5px 8px 4px 8px; text-align: center; }
+
+i {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+}
+ </style>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.tipsy.js') }}"></script>
+    <link href= "{{ url_for('static', filename = 'tipsy.css') }}" rel="stylesheet" type="text/css" />
+    <link href= "{{ url_for('static', filename = 'bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<div class="container">
+<h2 class="jumbotron" style="text-align: center">Spacetime Debugger</h2>
+
+<div class="row">
+<div class="col-lg-6">
+    <h3 style="text-align: center">Graph[Grouper]</h3>
+    <svg id="svg-canvas" width=960 height=400 ></svg>
+<script>
+    // Create the input graph
+var g = new dagreD3.graphlib.Graph()
+  .setGraph({})
+  .setDefaultEdgeLabel(function() { return {}; });
+
+
+
+g.setNode(0,{label:"ROOT", class:"not_head" , style: "stroke:#006400"});
+g.setNode(2,{label:"Grouper", class:"app", style: "stroke:#696969; stroke-dasharray: 5, 5;"});
+g.setNode(3,{label:"154b", class:"head" , style: "stroke:#006400"});
+
+
+g.setEdge(0,3,{style:'stroke:#000000;stroke-width: 2px;',arrowheadStyle: ''});
+g.setEdge(2,3,{style:"stroke: #696969; stroke-width: 3px; stroke-dasharray: 5, 5;",arrowheadStyle: 'fill: #696969'});
+
+
+
+
+console.log(g);
+
+g.nodes().forEach(function(v) {
+  var node = g.node(v);
+  // Round the corners of the nodes
+  node.rx = node.ry = 5;
+});
+
+
+
+
+
+// Create the renderer
+var render = new dagreD3.render();
+
+
+// Set up an SVG group so that we can translate the final graph.
+var svg = d3.select("svg"),
+    svgGroup = svg.append("g");
+
+// Run the renderer. This is what draws the final graph.
+render(d3.select("svg g"), g);
+
+svgGroup.selectAll("g.edgePath")
+  .attr("title", function(v) { return styleTooltip(g.edge(v).payload) })
+  .each(function(v) { $(this).tipsy({ gravity: "n", opacity: 1, html: true }); });
+
+// Center the graph
+var xCenterOffset = (svg.attr("width") - g.graph().width) / 5;
+svgGroup.attr("transform", "translate(" + xCenterOffset + ", 20)");
+svg.attr("height", g.graph().height + 40);
+
+
+</script>
+
+<div class="row">
+
+    <form action="/next" method="get">
+        <button name="Next Step" type="submit" class="text">Step Node</button>
+    </form>&nbsp;
+
+    <form action="/displayQueue" method="get">
+        <button name="RefreshQueue" type="submit">Step All Nodes</button>
+    </form>
+      &nbsp;
+      <form action="/next" method="get">
+        <button name="Next Step" type="submit" class="text">Play</button>
+    </form>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+
+
+
+</div>
+
+
+</div>
+<div class="col-lg-6">
+
+
+<h3>Actions</h3>
+    <p id="req_list">Previous Steps</p>
+<div style="height:80px;width:520px;border:1px solid #ccc;, Serif;overflow:auto;">
+
+    <ul style="list-style: none;">
+        <li>        &nbsp;                                                      </li>
+        <li>         &nbsp;                                                     </li>
+        <li>&#x2b; Receive Pull Request [from WordCounter2] State: ROOT     </li>
+        <li>&#x2b; Receive Pull Request [from WordCounter2] State: ROOT </li>
+    </ul>
+
+
+</div>
+
+<p id="req_list">Next Steps</p>
+<div style="height:350px;width:520px;border:1px solid #ccc;, Serif;overflow:auto;">
+<ul style="list-style: none;"><li>&#x2212;Receive Push Request 154b to a553 [from WordCounter1] &#x21e7; &#x21e9;</li>
+    <ul>
+
+        <ul>
+
+        <li><span style="background-color: #D6EAF8">Receive Request &#x21e7; &#x21e9;</span></li>
+        <li>Receive Data &#x21e7; &#x21e9;</li>
+        <li>Send Confirmation &#x21e7; &#x21e9;</li>
+        <li>Extend Graph &#x21e7; &#x21e9;</li>
+        <li>Resolve Conflicts&#x21e7; &#x21e9;</li>
+        <li>Garbage Collect&#x21e7; &#x21e9;</li>
+
+    </ul>
+
+    </ul>
+</ul>
+<ul style="list-style: none;"><li>&#x2b;Receive Push Request 154b to g67z [from WordCounter2] &#x21e7; &#x21e9;</li></ul>
+
+</div>
+
+
+ </div>
+</div>
+ <h3>State at version 154b</h3>
+<div class="row">
+
+     <table style="width:20%">
+   <caption>&#x2b;WordCount</caption>
+</table>
+
+
+
+   <table style="width:20%">
+   <caption style="caption-side:top">&#x2212;Line</caption>
+
+  <tr>
+    <th>line_num</th>
+    <th>line</th>
+
+  </tr>
+
+   <tr>
+    <td>0</td>
+    <td>foo</td>
+
+  </tr>
+
+<tr>
+    <td>1</td>
+    <td>bar</td>
+
+  </tr>
+
+       <tr>
+    <td>2</td>
+    <td>bar</td>
+
+  </tr>
+
+          <tr>
+    <td>3</td>
+    <td>baz</td>
+
+  </tr>
+
+            <tr>
+    <td>4</td>
+    <td>bar</td>
+
+  </tr>
+
+                <tr>
+    <td>5</td>
+    <td>bar</td>
+
+  </tr>
+</table>
+    &nbsp;
+    &nbsp;
+    &nbsp
+
+
+
+     <table style="width:20%">
+   <caption>&#x2b;Stop</caption>
+</table>
+
+
+
+    &nbsp;
+    &nbsp;
+</div>
+</div>
+</div>
+&nbsp;
+&nbsp;
+</body>
+</html>
